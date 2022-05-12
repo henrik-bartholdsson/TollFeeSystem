@@ -15,5 +15,13 @@ namespace TollFeeSystem.Core
             Foreign = 4,
             Military = 5
         }
+
+
+        public enum VehicleOwnerType
+        {
+            Person = 0,
+            Government = 1,
+            Company = 2
+        }
     }
 }
