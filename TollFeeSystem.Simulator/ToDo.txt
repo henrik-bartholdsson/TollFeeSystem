@@ -16,7 +16,7 @@ Tankar/krav:
 	I metoden (vilken metod?) ska det bland annat valideras så att fordonet har en ägare.
 	Lägg till en eventuell avgift om dagen och perioden är avgiftsbelagd.
 	Avgiften hamnar på ägaren av fordonet, som hämtas från fordonsregistret med hjälp av fordonets registreringsnummer.
-	Finns ingen ägare av fordonet? larma myndigheterna!
+	Finns ingen ägare av fordonet? larma myndigheterna! Ska inte kunna hända, men man vet ju alldrig.
 	Tillhör fordonet någon myndighet tas ingen avgift ut.
 	I framtiden kanske man vill att företag kan få vissa skattelättnader, där av att de får en egen ägartyp.
 
@@ -26,6 +26,7 @@ Tankar/krav:
 
 	Ett fordon har en ägare.
 	Ett fordon har ett registreringsnummer.
+	Märke
 
 		Bör inte behöva ha mycket mer än så...
 

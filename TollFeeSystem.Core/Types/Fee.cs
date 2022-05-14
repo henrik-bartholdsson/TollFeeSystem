@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace TollFeeSystem.Core.Types
 {
-    internal class Fee
+    public class Fee
     {
+        public int FeeAmount { get; set; }
+        public DateTime FeeTime { get; set; }
+        public string VehicleRegistrationNumber { get; set; }
     }
 }

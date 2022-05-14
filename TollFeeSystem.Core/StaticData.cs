@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TollFeeSystem.Core
+﻿namespace TollFeeSystem.Core
 {
     public static class StaticData
     {

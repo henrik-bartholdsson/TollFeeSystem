@@ -6,7 +6,17 @@ namespace TollFeeSystem.Simulator
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Stuff myEnum = new Stuff();
+
+            Console.WriteLine("Hello World! " + (int) Stuff.StuffB);
+        }
+
+
+
+        public enum Stuff
+        {
+            StuffA = 1,
+            StuffB = 2,
         }
     }
 }

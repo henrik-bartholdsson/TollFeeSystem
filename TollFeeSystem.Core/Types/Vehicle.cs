@@ -1,10 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using static TollFeeSystem.Core.StaticData;
 
 namespace TollFeeSystem.Core.Types
 {
-    internal class Vehicle
+    public class Vehicle
     {
+        public string Brand { get; set; }
+        public string RegistrationNumber { get; set; }
+        public VehicleOwner Owner { get; set; }
+        public VehicleType VehicleType { get; set; }
+
     }
 }
