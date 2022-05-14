@@ -10,10 +10,9 @@ namespace TollFeeSystem.Core
         public List<Vehicle> Vehicles { get; set; }
 
 
-        public Vehicle GetVehicle()
+        public List<Vehicle> GetAllVehicles()
         {
-
-            return new Vehicle();
+            return Vehicles;
         }
 
         public bool StoreVehicle(Vehicle vehicle)

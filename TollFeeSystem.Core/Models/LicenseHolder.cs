@@ -4,12 +4,12 @@ using static TollFeeSystem.Core.StaticData;
 
 namespace TollFeeSystem.Core.Types
 {
-    public class VehicleOwner
+    public class LicenseHolder
     {
         public string Name { get; set; }
         public List<Fee> Fees { get; set; }
 
-        public VehicleOwner()
+        public LicenseHolder()
         {
             Fees = new List<Fee>();
         }

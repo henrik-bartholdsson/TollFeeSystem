@@ -6,14 +6,20 @@ namespace TollFeeSystem.Simulator
     {
         static void Main(string[] args)
         {
-            var owner = new TollFeeSystem.Core.Types.VehicleOwner() { Name = "Henrik"};
+            var tollFeeSystem = new TollFeeSystem.Core.TollFeeSystem();
 
-            var vehicle = new TollFeeSystem.Core.Types.Vehicle() { Owner = owner, Brand = "Volvo", RegistrationNumber = "asd-123", VehicleType = Core.StaticData.VehicleType.Diplomat };
+            var vehicleRegistry = tollFeeSystem.GetVehicleRegistry();
+            var vehicle = vehicleRegistry.GetAllVehicles();
 
-            var syst = new TollFeeSystem.Core.TollFeeSystem();
+            tollFeeSystem.PassThroughPortal(vehicle[1], DateTime.Parse("2022-05-13T15:00:00"));
+
+            var ownerWithFee = tollFeeSystem.GetLicenseHolders();
 
 
-            syst.PassThroughPortal(vehicle, DateTime.Parse("2022-05-14T15:00:00"));
+
+
+            var e = 0;
+
         }
 
     }

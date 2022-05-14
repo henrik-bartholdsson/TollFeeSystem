@@ -2,7 +2,7 @@
 
 namespace TollFeeSystem.Core.Models
 {
-    internal class FeeException
+    internal class FeeExceptionVehicle
     {
         public VehicleType VehicleType { get; set; }
     }

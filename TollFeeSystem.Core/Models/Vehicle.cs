@@ -6,7 +6,7 @@ namespace TollFeeSystem.Core.Types
     {
         public string Brand { get; set; }
         public string RegistrationNumber { get; set; }
-        public VehicleOwner Owner { get; set; }
+        public LicenseHolder Owner { get; set; }
         public VehicleType VehicleType { get; set; }
 
     }

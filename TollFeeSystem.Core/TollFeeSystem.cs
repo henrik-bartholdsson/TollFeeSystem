@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TollFeeSystem.Core.Models;
 using TollFeeSystem.Core.Types;
@@ -15,16 +16,19 @@ namespace TollFeeSystem.Core
         // Call portals with vehicle as arguments, the return should may be some kind of message.
 
         private IVehicleRegistry _vehicleRegistry;
-        private TollFeeSystem _tollFeeSystem;
-        private List<FeeDefinition> _feeDefinitions; // from transportstyrelsen
+        //private TollFeeSystem _tollFeeSystem;
+        //private List<FeeDefinition> _feeDefinitions; // from transportstyrelsen
         private List<DateTime> _FeeExceptionDays;
-        private List<FeeException> _feeExceptionVehicles;
-        private List<VehicleOwner> _licenseHolder;
+        //private List<FeeExceptionVehicle> _feeExceptionVehicles;
+        //private List<LicenseHolder> _licenseHolders;
+
+        private TFSContext _TFSContext;
 
         public TollFeeSystem()
         {
             //_vehicleRegistry = vehicleRegistry;
             //_tollFeeSystem = tollFeeSystem;
+            _TFSContext = new TFSContext();
             Initializer();
         }
 
@@ -37,7 +41,7 @@ namespace TollFeeSystem.Core
             var amountOfFee = GetAmountOfFee(currentTime);
             var fee = new Fee { FeeAmount = amountOfFee, FeeTime = currentTime, VehicleRegistrationNumber = vehicle.RegistrationNumber };
 
-
+            AssignFee(fee, vehicle);
             var a = 0;
             // Assign Fee on vehicle owner
         }
@@ -47,77 +51,49 @@ namespace TollFeeSystem.Core
             return _vehicleRegistry;
         }
 
+        public IEnumerable<LicenseHolder> GetLicenseHolders()
+        {
+            return _TFSContext.LicenseHolders.Where(x => x.Fees.Count > 0).ToList();
+        }
 
 
 
         private void Initializer()
         {
-            _feeDefinitions = new List<FeeDefinition>() {
-                new FeeDefinition { Start = DateTime.Parse("06:00:00"), End = DateTime.Parse("06:29:59"), Amount = (int) FeeAmount.Low},
-                new FeeDefinition { Start = DateTime.Parse("06:30:00"), End = DateTime.Parse("06:59:59"), Amount = (int) FeeAmount.Medium},
-                new FeeDefinition { Start = DateTime.Parse("07:00:00"), End = DateTime.Parse("07:59:59"), Amount = (int) FeeAmount.High},
-                new FeeDefinition { Start = DateTime.Parse("08:00:00"), End = DateTime.Parse("08:29:59"), Amount = (int) FeeAmount.Medium },
-                new FeeDefinition { Start = DateTime.Parse("08:30:00"), End = DateTime.Parse("14:59:59"), Amount = (int) FeeAmount.Low},
-                new FeeDefinition { Start = DateTime.Parse("15:00:00"), End = DateTime.Parse("15:29:59"), Amount = (int) FeeAmount.Medium},
-                new FeeDefinition { Start = DateTime.Parse("15:30:00"), End = DateTime.Parse("16:59:59"), Amount = (int) FeeAmount.High},
-                new FeeDefinition { Start = DateTime.Parse("17:00:00"), End = DateTime.Parse("17:59:59"), Amount = (int) FeeAmount.Medium},
-                new FeeDefinition { Start = DateTime.Parse("18:00:00"), End = DateTime.Parse("18:29:59"), Amount = (int) FeeAmount.Low},
-            };
 
-            _feeExceptionVehicles = new List<FeeException>
-            {
-             new FeeException{ VehicleType = VehicleType.Emergency},
-             new FeeException{ VehicleType = VehicleType.Buss},
-             new FeeException{ VehicleType = VehicleType.Diplomat},
-             new FeeException{ VehicleType = VehicleType.Motorbike},
-             new FeeException{ VehicleType = VehicleType.Military}
-            };
-
-            _FeeExceptionDays = new List<DateTime>();
-
-            _licenseHolder = new List<VehicleOwner> {
-            new VehicleOwner() { Name = "Neo", Fees = new List<Fee>() },
-            new VehicleOwner() { Name = "Ripley", Fees = new List<Fee>() },
-            new VehicleOwner() { Name = "Elizabeth", Fees = new List<Fee>() },
-            new VehicleOwner() { Name = "Luke", Fees = new List<Fee>() },
-            new VehicleOwner() { Name = "Bilbo", Fees = new List<Fee>() },
-            };
+            _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("06:00:00"), End = DateTime.Parse("06:29:59"), Amount = (int)FeeAmount.Low });
+            _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("06:30:00"), End = DateTime.Parse("06:59:59"), Amount = (int)FeeAmount.Medium });
+            _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("07:00:00"), End = DateTime.Parse("07:59:59"), Amount = (int)FeeAmount.High });
+            _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("08:00:00"), End = DateTime.Parse("08:29:59"), Amount = (int)FeeAmount.Medium });
+            _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("08:30:00"), End = DateTime.Parse("14:59:59"), Amount = (int)FeeAmount.Low });
+            _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("15:00:00"), End = DateTime.Parse("15:29:59"), Amount = (int)FeeAmount.Medium });
+            _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("15:30:00"), End = DateTime.Parse("16:59:59"), Amount = (int)FeeAmount.High });
+            _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("17:00:00"), End = DateTime.Parse("17:59:59"), Amount = (int)FeeAmount.Medium });
+            _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("18:00:00"), End = DateTime.Parse("18:29:59"), Amount = (int)FeeAmount.Low });
 
 
-            Vehicle v1 = new Vehicle()
-            {
-                Brand = "Volvo 142",
-                Owner = _licenseHolder[0],
-                RegistrationNumber = "ABC-123",
-                VehicleType = VehicleType.Personal
-            };
+            _TFSContext.FeeExceptionVehicles.Add(new FeeExceptionVehicle{ VehicleType = VehicleType.Emergency});
+            _TFSContext.FeeExceptionVehicles.Add(new FeeExceptionVehicle{ VehicleType = VehicleType.Buss});
+            _TFSContext.FeeExceptionVehicles.Add(new FeeExceptionVehicle{ VehicleType = VehicleType.Diplomat});
+            _TFSContext.FeeExceptionVehicles.Add(new FeeExceptionVehicle{ VehicleType = VehicleType.Motorbike});
+            _TFSContext.FeeExceptionVehicles.Add(new FeeExceptionVehicle{ VehicleType = VehicleType.Military});
 
-            Vehicle v2 = new Vehicle()
-            {
-                Brand = "Volvo 142",
-                Owner = _licenseHolder[1],
-                RegistrationNumber = "ABC-123",
-                VehicleType = VehicleType.Personal
-            };
 
-            Vehicle v3 = new Vehicle()
-            {
-                Brand = "Volvo 142",
-                Owner = _licenseHolder[2],
-                RegistrationNumber = "ABC-123",
-                VehicleType = VehicleType.Personal
-            };
+            _FeeExceptionDays = new List<DateTime>(); // Not defined yet
 
-            Vehicle v4 = new Vehicle()
-            {
-                Brand = "Volvo 142",
-                Owner = _licenseHolder[3],
-                RegistrationNumber = "ABC-123",
-                VehicleType = VehicleType.Personal
-            };
 
-            _vehicleRegistry = new VehicleRegistry() { Vehicles = new List<Vehicle> { v1, v2, v3, v4 } };
+            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Neo", Fees = new List<Fee>() });
+            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Ripley", Fees = new List<Fee>() });
+            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Elizabeth", Fees = new List<Fee>() });
+            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Luke", Fees = new List<Fee>() });
+            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Bilbo", Fees = new List<Fee>() });
 
+
+            _TFSContext.Vehicles.Add(new Vehicle() { Brand = "Volvo 142", Owner = _TFSContext.LicenseHolders[0], RegistrationNumber = "ABC-123", VehicleType = VehicleType.Personal });
+            _TFSContext.Vehicles.Add(new Vehicle() { Brand = "WV Golf GTI", Owner = _TFSContext.LicenseHolders[1], RegistrationNumber = "JSK-983", VehicleType = VehicleType.Personal });
+            _TFSContext.Vehicles.Add(new Vehicle() { Brand = "Scoda Fabia", Owner = _TFSContext.LicenseHolders[2], RegistrationNumber = "BWU-081", VehicleType = VehicleType.Personal });
+            _TFSContext.Vehicles.Add(new Vehicle() { Brand = "Testa S2", Owner = _TFSContext.LicenseHolders[3], RegistrationNumber = "PCE-592", VehicleType = VehicleType.Personal });
+            _TFSContext.Vehicles.Add(new Vehicle() { Brand = "Testa S2", Owner = _TFSContext.LicenseHolders[0], RegistrationNumber = "PCF-591", VehicleType = VehicleType.Personal });
         }
 
 
@@ -125,8 +101,8 @@ namespace TollFeeSystem.Core
 
         private bool VehicleTypeExceptedFromFee(Vehicle vehicle)
         {
-            foreach(var v in _feeExceptionVehicles)
-                if(v.VehicleType == vehicle.VehicleType)
+            foreach (var v in _TFSContext.FeeExceptionVehicles)
+                if (v.VehicleType == vehicle.VehicleType)
                     return true;
 
             return false;
@@ -138,7 +114,7 @@ namespace TollFeeSystem.Core
                 return 0;
 
 
-            foreach (var fd in _feeDefinitions)
+            foreach (var fd in _TFSContext.FeeDefinitions)
             {
                 if (currentTime.TimeOfDay >= fd.Start.TimeOfDay &&
                    currentTime.TimeOfDay <= fd.End.TimeOfDay)
