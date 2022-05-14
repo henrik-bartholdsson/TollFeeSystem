@@ -46,9 +46,9 @@ namespace TollFeeSystem.Core
             // Assign Fee on vehicle owner
         }
 
-        public IVehicleRegistry GetVehicleRegistry()
+        public List<Vehicle> GetVehicleRegistry()
         {
-            return _vehicleRegistry;
+            return _TFSContext.Vehicles.ToList();
         }
 
         public IEnumerable<LicenseHolder> GetLicenseHolders()

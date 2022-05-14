@@ -9,9 +9,8 @@ namespace TollFeeSystem.Simulator
             var tollFeeSystem = new TollFeeSystem.Core.TollFeeSystem();
 
             var vehicleRegistry = tollFeeSystem.GetVehicleRegistry();
-            var vehicle = vehicleRegistry.GetAllVehicles();
 
-            tollFeeSystem.PassThroughPortal(vehicle[1], DateTime.Parse("2022-05-13T15:00:00"));
+            tollFeeSystem.PassThroughPortal(vehicleRegistry[1], DateTime.Parse("2022-05-13T15:00:00"));
 
             var ownerWithFee = tollFeeSystem.GetLicenseHolders();
 

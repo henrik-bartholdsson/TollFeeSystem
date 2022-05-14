@@ -7,7 +7,7 @@ namespace TollFeeSystem.Core.Types.Contracts
     public interface ITollFeeSystem
     {
         void PassThroughPortal(Vehicle vehicle, DateTime currentTime);
-        IVehicleRegistry GetVehicleRegistry();
+        List<Vehicle> GetVehicleRegistry();
 
         IEnumerable<LicenseHolder> GetLicenseHolders();
     }
