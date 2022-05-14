@@ -21,7 +21,7 @@ namespace TollFeeSystem.Core
             return true;
         }
 
-        public string GetOwnerOfVehicle() // Type Owner
+        public string GetOwnerOfVehicle() // Return Type Owner
         {
 
             return "";
