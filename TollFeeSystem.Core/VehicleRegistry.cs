@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using TollFeeSystem.Core.Types;
+using TollFeeSystem.Core.Types.Contracts;
 
 namespace TollFeeSystem.Core
 {
-    public class VehicleRegistry
+    public class VehicleRegistry : IVehicleRegistry
     {
         public List<Vehicle> Vehicles { get; set; }
 

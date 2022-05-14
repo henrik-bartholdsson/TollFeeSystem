@@ -6,17 +6,15 @@ namespace TollFeeSystem.Simulator
     {
         static void Main(string[] args)
         {
-            Stuff myEnum = new Stuff();
+            var owner = new TollFeeSystem.Core.Types.VehicleOwner() { Name = "Henrik"};
 
-            Console.WriteLine("Hello World! " + (int) Stuff.StuffB);
+            var vehicle = new TollFeeSystem.Core.Types.Vehicle() { Owner = owner, Brand = "Volvo", RegistrationNumber = "asd-123", VehicleType = Core.StaticData.VehicleType.Diplomat };
+
+            var syst = new TollFeeSystem.Core.TollFeeSystem();
+
+
+            syst.PassThroughPortal(vehicle, DateTime.Parse("2022-05-14T15:00:00"));
         }
 
-
-
-        public enum Stuff
-        {
-            StuffA = 1,
-            StuffB = 2,
-        }
     }
 }

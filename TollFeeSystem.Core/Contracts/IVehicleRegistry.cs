@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TollFeeSystem.Core.Types.Contracts
 {
-    internal interface IVehicleOwner
+    public interface IVehicleRegistry
     {
     }
 }
