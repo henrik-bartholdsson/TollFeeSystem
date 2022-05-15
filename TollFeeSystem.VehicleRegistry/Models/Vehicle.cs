@@ -1,6 +1,4 @@
-﻿using static TollFeeSystem.Core.StaticData;
-
-namespace TollFeeSystem.Core.Types
+﻿namespace TollFeeSystem.Core.Types
 {
     public class Vehicle
     {
@@ -9,5 +7,19 @@ namespace TollFeeSystem.Core.Types
         public LicenseHolder Owner { get; set; }
         public VehicleType VehicleType { get; set; }
 
+    }
+
+
+
+    public enum VehicleType
+    {
+        Motorbike,
+        Tractor,
+        Emergency,
+        Diplomat,
+        Foreign,
+        Military,
+        Personal,
+        Buss,
     }
 }

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using TollFeeSystem.Core.Models;
 
 namespace TollFeeSystem.Core.Types.Contracts
 {
     public interface ITollFeeSystem
     {
         void PassThroughPortal(string vehicleRegistrationNumber, DateTime currentTime);
-        List<Vehicle> GetVehicleRegistry();
-
-        IEnumerable<LicenseHolder> GetLicenseHoldersThatHaveFees();
+        IEnumerable<string> GetAllVehicleRegistrationNumbers();
+        IEnumerable<FeeHead> GetLicenseHoldersThatHaveFees();
     }
 }
