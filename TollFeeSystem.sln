@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TollFeeSystem.Simulator", "TollFeeSystem.Simulator\TollFeeSystem.Simulator.csproj", "{D278EA6D-6118-42FA-9DC0-3425D7CCDF43}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TollFeeSystem.Simulator", "TollFeeSystem.Simulator\TollFeeSystem.Simulator.csproj", "{D278EA6D-6118-42FA-9DC0-3425D7CCDF43}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TollFeeSystem.Core", "TollFeeSystem.Core\TollFeeSystem.Core.csproj", "{A79BC6D9-0E5D-4A62-9992-710C0C8272E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TollFeeSystem.Core", "TollFeeSystem.Core\TollFeeSystem.Core.csproj", "{A79BC6D9-0E5D-4A62-9992-710C0C8272E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TollFeeSystem.VehicleRegistry", "TollFeeSystem.VehicleRegistry\TollFeeSystem.VehicleRegistry.csproj", "{9EE1D125-D482-42C3-923E-9A1A025CF389}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{A79BC6D9-0E5D-4A62-9992-710C0C8272E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A79BC6D9-0E5D-4A62-9992-710C0C8272E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A79BC6D9-0E5D-4A62-9992-710C0C8272E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EE1D125-D482-42C3-923E-9A1A025CF389}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EE1D125-D482-42C3-923E-9A1A025CF389}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EE1D125-D482-42C3-923E-9A1A025CF389}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EE1D125-D482-42C3-923E-9A1A025CF389}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
