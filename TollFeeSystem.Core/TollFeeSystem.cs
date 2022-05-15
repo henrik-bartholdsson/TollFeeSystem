@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using TollFeeSystem.Core.Models;
 using TollFeeSystem.Core.Types;
 using TollFeeSystem.Core.Types.Contracts;
@@ -11,39 +10,36 @@ namespace TollFeeSystem.Core
 {
     public class TollFeeSystem : ITollFeeSystem
     {
-        // Main class to interact with the system
         // Use singleton
-        // Call portals with vehicle as arguments, the return should may be some kind of message.
 
         private IVehicleRegistry _vehicleRegistry;
-        //private TollFeeSystem _tollFeeSystem;
-        //private List<FeeDefinition> _feeDefinitions; // from transportstyrelsen
         private List<DateTime> _FeeExceptionDays;
-        //private List<FeeExceptionVehicle> _feeExceptionVehicles;
-        //private List<LicenseHolder> _licenseHolders;
 
         private TFSContext _TFSContext;
 
         public TollFeeSystem()
         {
-            //_vehicleRegistry = vehicleRegistry;
-            //_tollFeeSystem = tollFeeSystem;
             _TFSContext = new TFSContext();
             Initializer();
         }
 
-        public void PassThroughPortal(Vehicle vehicle, DateTime currentTime)
+        public void PassThroughPortal(string vehicleRegistrationNumber, DateTime currentTime)
         {
+            var vehicle = _TFSContext.Vehicles.Where(x => x.RegistrationNumber.ToUpper() == vehicleRegistrationNumber.ToUpper()).FirstOrDefault();
+
+            if(vehicle == null)
+            {
+                // Log information
+            }
+
             var excepted = VehicleTypeExceptedFromFee(vehicle);
             if (excepted)
                 return;
 
             var amountOfFee = GetAmountOfFee(currentTime);
-            var fee = new Fee { FeeAmount = amountOfFee, FeeTime = currentTime, VehicleRegistrationNumber = vehicle.RegistrationNumber };
+            var fee = new FeeRecord { FeeAmount = amountOfFee, FeeTime = currentTime, VehicleRegistrationNumber = vehicle.RegistrationNumber };
 
             AssignFee(fee, vehicle);
-            var a = 0;
-            // Assign Fee on vehicle owner
         }
 
         public List<Vehicle> GetVehicleRegistry()
@@ -51,12 +47,10 @@ namespace TollFeeSystem.Core
             return _TFSContext.Vehicles.ToList();
         }
 
-        public IEnumerable<LicenseHolder> GetLicenseHolders()
+        public IEnumerable<LicenseHolder> GetLicenseHoldersThatHaveFees()
         {
-            return _TFSContext.LicenseHolders.Where(x => x.Fees.Count > 0).ToList();
+            return _TFSContext.LicenseHolders.Where(x => x.FeeDays.Count > 0).ToList();
         }
-
-
 
         private void Initializer()
         {
@@ -82,11 +76,11 @@ namespace TollFeeSystem.Core
             _FeeExceptionDays = new List<DateTime>(); // Not defined yet
 
 
-            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Neo", Fees = new List<Fee>() });
-            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Ripley", Fees = new List<Fee>() });
-            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Elizabeth", Fees = new List<Fee>() });
-            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Luke", Fees = new List<Fee>() });
-            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Bilbo", Fees = new List<Fee>() });
+            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Neo", FeeDays = new List<FeeDay>() });
+            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Ripley", FeeDays = new List<FeeDay>() });
+            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Elizabeth", FeeDays = new List<FeeDay>() });
+            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Luke", FeeDays = new List<FeeDay>() });
+            _TFSContext.LicenseHolders.Add(new LicenseHolder() { Name = "Bilbo", FeeDays = new List<FeeDay>() });
 
 
             _TFSContext.Vehicles.Add(new Vehicle() { Brand = "Volvo 142", Owner = _TFSContext.LicenseHolders[0], RegistrationNumber = "ABC-123", VehicleType = VehicleType.Personal });
@@ -95,6 +89,9 @@ namespace TollFeeSystem.Core
             _TFSContext.Vehicles.Add(new Vehicle() { Brand = "Testa S2", Owner = _TFSContext.LicenseHolders[3], RegistrationNumber = "PCE-592", VehicleType = VehicleType.Personal });
             _TFSContext.Vehicles.Add(new Vehicle() { Brand = "Testa S2", Owner = _TFSContext.LicenseHolders[0], RegistrationNumber = "PCF-591", VehicleType = VehicleType.Personal });
         }
+
+
+
 
 
         #region Helpers
@@ -140,8 +137,9 @@ namespace TollFeeSystem.Core
 
             return false;
         }
-        private void AssignFee(Fee fee, Vehicle vehicle)
+        private void AssignFee(FeeRecord fee, Vehicle vehicle)
         {
+            if (fee.FeeAmount > 0)
             vehicle.Owner.AddFee(fee);
         }
 

@@ -2,7 +2,7 @@
 
 namespace TollFeeSystem.Core.Types
 {
-    public class Fee
+    public class FeeRecord
     {
         public int FeeAmount { get; set; }
         public DateTime FeeTime { get; set; }

@@ -5,7 +5,7 @@ namespace TollFeeSystem.Core.Models
 {
     internal class TFSContext
     {
-        public List<Fee> Fees { get; set; }
+        public List<FeeRecord> Fees { get; set; }
         public List<FeeDefinition> FeeDefinitions { get; set; }
         public List<FeeExceptionVehicle> FeeExceptionVehicles { get; set; }
         public List<Vehicle> Vehicles { get; set; }
@@ -13,7 +13,7 @@ namespace TollFeeSystem.Core.Models
 
         public TFSContext()
         {
-            Fees = new List<Fee>();
+            Fees = new List<FeeRecord>();
             FeeDefinitions = new List<FeeDefinition>();
             FeeExceptionVehicles = new List<FeeExceptionVehicle>();
             Vehicles = new List<Vehicle>();
