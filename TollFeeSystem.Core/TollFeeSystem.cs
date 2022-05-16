@@ -20,7 +20,7 @@ namespace TollFeeSystem.Core
         {
             _vehicleRegistry = new VehicleRegistry();
             _TFSContext = new TFSContext();
-            Initializer();
+            Initialize();
         }
 
         public void PassThroughPortal(string vehicleRegistrationNumber, DateTime currentTime)
@@ -108,7 +108,7 @@ namespace TollFeeSystem.Core
 
             _TFSContext.FeeHeads.Add(new FeeHead { Name = vehicle.Owner.Name, FeeRecords = new List<FeeRecord> { feeRecord } });
         }
-        private void Initializer()
+        private void Initialize()
         {
             _TFSContext.FeeHeads = new List<FeeHead>();
 

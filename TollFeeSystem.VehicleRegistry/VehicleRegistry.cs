@@ -18,7 +18,7 @@ namespace TollFeeSystem.Core
         public VehicleRegistry()
         {
             _VrContext = new VRContext();
-            Initializer();
+            Initialize();
         }
 
         public Vehicle GetVehicleByRegNr(string regNr)
@@ -35,7 +35,7 @@ namespace TollFeeSystem.Core
 
 
         #region Private methods
-        private void Initializer()
+        private void Initialize()
         {
             _VrContext.LicenseHolders = new List<LicenseHolder>();
             _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Neo", });
