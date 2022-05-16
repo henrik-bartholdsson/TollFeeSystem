@@ -5,13 +5,6 @@ namespace TollFeeSystem.Core.Models
 {
     public class FeeHead
     {
-        public FeeHead()
-        {
-            FeeRecords = new List<FeeRecord>();
-        }
-
-
-
         public string Name { get; set; }
         public List<FeeRecord> FeeRecords { get; set; }
 

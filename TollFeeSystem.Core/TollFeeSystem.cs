@@ -29,15 +29,12 @@ namespace TollFeeSystem.Core
         }
 
 
-
-
-
         public IEnumerable<string> GetAllVehicleRegistrationNumbers()
         {
             var regNumbers = _vehicleRegistry.GetAllVehicleRegistrationNumbers();
 
             if (regNumbers == null)
-                throw new Exception("Log connection to vehicle registry failed. Store information and try again later.");
+                throw new Exception("Log. Connection to vehicle registry failed. Store information and try again later.");
 
             if (regNumbers.Count == 0)
                 throw new Exception("Somone did truncate on the vehicle database, probably my friend Jim...");
@@ -46,21 +43,11 @@ namespace TollFeeSystem.Core
             return regNumbers;
         }
 
-
         public IEnumerable<FeeHead> GetLicenseHoldersThatHaveFees()
         {
             var a = _TFSContext.FeeHeads;
             return _TFSContext.FeeHeads.Where(x => x.FeeRecords.Count > 0).ToList();
         }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -118,11 +105,6 @@ namespace TollFeeSystem.Core
             var feeRecord = new FeeRecord { FeeAmount = amountOfFee, FeeTime = currentTime, VehicleRegistrationNumber = vehicle.RegistrationNumber };
 
             var vehicleOwner = _TFSContext.FeeHeads.FirstOrDefault(x => x.Name == vehicle.Owner.Name);
-
-            //if(vehicleOwner == null)
-            //{
-            //    _TFSContext.FeeHeads = new List<FeeHead>();
-            //}
 
             _TFSContext.FeeHeads.Add(new FeeHead { Name = vehicle.Owner.Name, FeeRecords = new List<FeeRecord> { feeRecord } });
         }
