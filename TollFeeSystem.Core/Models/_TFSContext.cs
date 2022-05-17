@@ -7,6 +7,7 @@ namespace TollFeeSystem.Core.Models
     internal class TFSContext
     {
         public List<FeeRecord> Fees { get; set; }
+        public List<Portal> Portals { get; set; }
         public List<FeeHead> FeeHeads { get; set; }
         public List<DateTime> FeeExceptionDays { get; set; }
         public List<FeeDefinition> FeeDefinitions { get; set; }
@@ -15,6 +16,7 @@ namespace TollFeeSystem.Core.Models
         public TFSContext()
         {
             Fees = new List<FeeRecord>();
+            Portals = new List<Portal>();
             FeeHeads = new List<FeeHead>();
             FeeDefinitions = new List<FeeDefinition>();
             FeeExceptionDays = new List<DateTime> { DateTime.Now };

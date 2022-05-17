@@ -6,8 +6,9 @@ namespace TollFeeSystem.Core.Types.Contracts
 {
     public interface ITollFeeSystem
     {
-        void PassThroughPortal(string vehicleRegistrationNumber, DateTime currentTime);
-        IEnumerable<string> GetAllVehicleRegistrationNumbers();
-        IEnumerable<FeeHead> GetLicenseHoldersThatHaveFees();
+        void PassThroughPortal(string vehicleRegistrationNumber, DateTime currentTime, int portalId);
+        IEnumerable<string> GetVehicleRegistrationNumbers();
+        IEnumerable<FeeHead> GetLicenseHoldersWithFees();
+        IEnumerable<int> GetPortalIds();
     }
 }

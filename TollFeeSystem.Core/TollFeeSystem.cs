@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TollFeeSystem.Core.Dto;
 using TollFeeSystem.Core.Models;
 using TollFeeSystem.Core.Types;
 using TollFeeSystem.Core.Types.Contracts;
@@ -20,16 +21,25 @@ namespace TollFeeSystem.Core
         {
             _vehicleRegistry = new VehicleRegistry();
             _TFSContext = new TFSContext();
-            Initializer();
+            Initialize();
         }
 
-        public void PassThroughPortal(string vehicleRegistrationNumber, DateTime currentTime)
+        public void PassThroughPortal(string vehicleRegistrationNumber, DateTime currentTime, int portalId)
         {
-            AssignFee(currentTime, vehicleRegistrationNumber);
+            var passTrough = new PassTroughDto
+            {
+                InputRegNr = vehicleRegistrationNumber,
+                PassTroughTime = currentTime,
+                PortalId = portalId
+            };
+
+            AssignFee(passTrough);
         }
-
-
-        public IEnumerable<string> GetAllVehicleRegistrationNumbers()
+        public IEnumerable<int> GetPortalIds()
+        {
+            return _TFSContext.Portals.Select(x => x.PortalId).ToList();            
+        }
+        public IEnumerable<string> GetVehicleRegistrationNumbers()
         {
             var regNumbers = _vehicleRegistry.GetAllVehicleRegistrationNumbers();
 
@@ -42,8 +52,7 @@ namespace TollFeeSystem.Core
 
             return regNumbers;
         }
-
-        public IEnumerable<FeeHead> GetLicenseHoldersThatHaveFees()
+        public IEnumerable<FeeHead> GetLicenseHoldersWithFees()
         {
             var a = _TFSContext.FeeHeads;
             return _TFSContext.FeeHeads.Where(x => x.FeeRecords.Count > 0).ToList();
@@ -57,27 +66,49 @@ namespace TollFeeSystem.Core
 
         private bool VehicleTypeExceptedFromFee(Vehicle vehicle)
         {
-            foreach (var v in _TFSContext.FeeExceptionVehicles)
+            var exceptedVehicleTypes = _TFSContext.FeeExceptionVehicles;
+
+            foreach (var v in exceptedVehicleTypes)
                 if (v.VehicleType == vehicle.VehicleType)
                     return true;
 
             return false;
         }
-        private int GetAmountOfFee(DateTime currentTime)
+        private int GetAmountOfFee(PassTroughDto PassTrough)
         {
-            var isExcepted = DayIsExceptedFromFee(currentTime);
-            if (isExcepted)
+            var exceptionDay = DayIsExceptedFromFee(PassTrough.PassTroughTime);
+            if (exceptionDay)
                 return 0;
+
+            var addressException = ExceptionByAddress(PassTrough);
+            if (addressException)
+                return 0;
+
+
 
             foreach (var fd in _TFSContext.FeeDefinitions)
             {
-                if (currentTime.TimeOfDay >= fd.Start.TimeOfDay &&
-                   currentTime.TimeOfDay <= fd.End.TimeOfDay)
+                if (PassTrough.PassTroughTime.TimeOfDay >= fd.Start.TimeOfDay &&
+                     PassTrough.PassTroughTime.TimeOfDay <= fd.End.TimeOfDay)
                     return fd.Amount;
             }
 
             return 0;
         }
+
+        private bool ExceptionByAddress(PassTroughDto PassTrough) // Ska korta ned logiken senare.
+        {
+            var ports = _TFSContext.Portals.Where(
+                x =>x.PortalId == PassTrough.PortalId && x.FeeExceptionsByResidentialAddress.Any(
+                    x => x == PassTrough.VehicleFromRegistry.Owner.ResidentialAddress
+                    )).ToList();
+
+            if (ports != null)
+                return true;
+
+            return false;
+        }
+
         private bool DayIsExceptedFromFee(DateTime currentTime) // See exceptions https://www.transportstyrelsen.se/sv/vagtrafik/Trangselskatt/Trangselskatt-i-goteborg/Tider-och-belopp-i-Goteborg/dagar-da-trangselskatt-inte-tas-ut-i-goteborg/
         {
             if (currentTime.DayOfWeek == DayOfWeek.Saturday || currentTime.DayOfWeek == DayOfWeek.Sunday)
@@ -88,29 +119,53 @@ namespace TollFeeSystem.Core
 
             return false;
         }
-        private void AssignFee(DateTime currentTime, string vehicleRegistrationNumber)
-        {
-            var vehicle = _vehicleRegistry.GetVehicleByRegNr(vehicleRegistrationNumber);
 
-            if (vehicle == null)
+        private void AssignFee(PassTroughDto PassTrough)
+        {
+            PassTrough.VehicleFromRegistry = _vehicleRegistry.GetVehicleByRegNr(PassTrough.InputRegNr);
+
+            if (PassTrough.VehicleFromRegistry == null)
             {
-                // Inform authorities 
+                // Log for statistics
+                return;
             }
 
-            var excepted = VehicleTypeExceptedFromFee(vehicle);
+            var excepted = VehicleTypeExceptedFromFee(PassTrough.VehicleFromRegistry);
             if (excepted)
                 return;
 
-            var amountOfFee = GetAmountOfFee(currentTime);
-            var feeRecord = new FeeRecord { FeeAmount = amountOfFee, FeeTime = currentTime, VehicleRegistrationNumber = vehicle.RegistrationNumber };
+            var amountOfFee = GetAmountOfFee(PassTrough);
 
-            var vehicleOwner = _TFSContext.FeeHeads.FirstOrDefault(x => x.Name == vehicle.Owner.Name);
+            var feeRecord = new FeeRecord
+            {
+                FeeAmount = amountOfFee,
+                FeeTime = PassTrough.PassTroughTime,
+                VehicleRegistrationNumber = PassTrough.VehicleFromRegistry.RegistrationNumber
+            };
 
-            _TFSContext.FeeHeads.Add(new FeeHead { Name = vehicle.Owner.Name, FeeRecords = new List<FeeRecord> { feeRecord } });
+            var vehicleOwner = _TFSContext.FeeHeads.FirstOrDefault(x => x.Name == PassTrough.VehicleFromRegistry.Owner.Name);
+
+            _TFSContext.FeeHeads.Add(
+                new FeeHead
+                {
+                    Name = PassTrough.VehicleFromRegistry.Owner.Name,
+                    FeeRecords = new List<FeeRecord> { feeRecord }
+                });
         }
-        private void Initializer()
+
+        private void Initialize()
         {
             _TFSContext.FeeHeads = new List<FeeHead>();
+
+            _TFSContext.Portals = new List<Portal>();
+            _TFSContext.Portals.Add(new Portal { PortalId = 11, PortalNameAddress = "Tingstad North", FeeExceptionsByResidentialAddress = new List<string>() });
+            _TFSContext.Portals.Add(new Portal { PortalId = 12, PortalNameAddress = "Tingstad South", FeeExceptionsByResidentialAddress = new List<string>() });
+            _TFSContext.Portals.Add(new Portal { PortalId = 13, PortalNameAddress = "E6 North Entrance", FeeExceptionsByResidentialAddress = new List<string>() });
+            _TFSContext.Portals.Add(new Portal { PortalId = 14, PortalNameAddress = "E6 North Departure", FeeExceptionsByResidentialAddress = new List<string>() });
+            _TFSContext.Portals.Add(new Portal { PortalId = 13, PortalNameAddress = "E6 South Entrance", FeeExceptionsByResidentialAddress = new List<string>() });
+            _TFSContext.Portals.Add(new Portal { PortalId = 14, PortalNameAddress = "E6 South Departure", FeeExceptionsByResidentialAddress = new List<string>() });
+            _TFSContext.Portals.Add(new Portal { PortalId = 17, PortalNameAddress = "Backa Entrance", FeeExceptionsByResidentialAddress = new List<string> { "Backa" } });
+            _TFSContext.Portals.Add(new Portal { PortalId = 18, PortalNameAddress = "Backa Departure", FeeExceptionsByResidentialAddress = new List<string> { "Backa" } });
 
             _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("06:00:00"), End = DateTime.Parse("06:29:59"), Amount = (int)FeeAmount.Low });
             _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("06:30:00"), End = DateTime.Parse("06:59:59"), Amount = (int)FeeAmount.Medium });

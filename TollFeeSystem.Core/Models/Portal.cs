@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace TollFeeSystem.Core.Models
 {
@@ -8,5 +6,6 @@ namespace TollFeeSystem.Core.Models
     {
         public int PortalId { get; set; }
         public string PortalNameAddress { get; set; }
+        public List<string> FeeExceptionsByResidentialAddress { get; set; }
     }
 }

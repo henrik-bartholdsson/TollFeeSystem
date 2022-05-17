@@ -18,7 +18,7 @@ namespace TollFeeSystem.Core
         public VehicleRegistry()
         {
             _VrContext = new VRContext();
-            Initializer();
+            Initialize();
         }
 
         public Vehicle GetVehicleByRegNr(string regNr)
@@ -35,14 +35,14 @@ namespace TollFeeSystem.Core
 
 
         #region Private methods
-        private void Initializer()
+        private void Initialize()
         {
             _VrContext.LicenseHolders = new List<LicenseHolder>();
-            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Neo", });
-            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Ripley", });
-            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Elizabeth.", });
-            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Luke", });
-            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Bilbo", });
+            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Neo", ResidentialAddress = "Backa" });
+            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Ripley", ResidentialAddress = "Backa" });
+            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Elizabeth.", ResidentialAddress = "Mölndal" });
+            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Luke", ResidentialAddress = "Frölunda" });
+            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Bilbo", ResidentialAddress = "Torslanda" });
 
             _VrContext.Vehicles = new List<Vehicle>();
             _VrContext.Vehicles.Add(new Vehicle() { Brand = "Volvo 142", Owner = _VrContext.LicenseHolders[0], RegistrationNumber = "ABC-123", VehicleType = VehicleType.Personal });
@@ -51,8 +51,6 @@ namespace TollFeeSystem.Core
             _VrContext.Vehicles.Add(new Vehicle() { Brand = "Testa S2", Owner = _VrContext.LicenseHolders[3], RegistrationNumber = "PCE-592", VehicleType = VehicleType.Personal });
             _VrContext.Vehicles.Add(new Vehicle() { Brand = "Testa S2", Owner = _VrContext.LicenseHolders[0], RegistrationNumber = "PCF-591", VehicleType = VehicleType.Personal });
         }
-
-
 
         #endregion
     }
