@@ -9,17 +9,15 @@ using static TollFeeSystem.Core.StaticData;
 
 namespace TollFeeSystem.Core
 {
-    public class TollFeeSystem : ITollFeeSystem
+    public class TollFeeService : ITollFeeService
     {
-        // Use singleton
-
-        private IVehicleRegistry _vehicleRegistry;
+        private IVehicleRegistryService _vehicleRegistry;
 
         private TFSContext _TFSContext;
 
-        public TollFeeSystem()
+        public TollFeeService(IVehicleRegistryService vehicleRegistry)
         {
-            _vehicleRegistry = new VehicleRegistry();
+            _vehicleRegistry = vehicleRegistry;
             _TFSContext = new TFSContext();
             Initialize();
         }
@@ -41,7 +39,7 @@ namespace TollFeeSystem.Core
         }
         public IEnumerable<string> GetVehicleRegistrationNumbers()
         {
-            var regNumbers = _vehicleRegistry.GetAllVehicleRegistrationNumbers();
+            var regNumbers = _vehicleRegistry.GetVehicleRegistrationNumbers();
 
             if (regNumbers == null)
                 throw new Exception("Log. Connection to vehicle registry failed. Store information and try again later.");
@@ -103,10 +101,13 @@ namespace TollFeeSystem.Core
                     x => x == PassTrough.VehicleFromRegistry.Owner.ResidentialAddress
                     )).ToList();
 
-            if (ports != null)
-                return true;
+            if (ports == null)
+                return false;
 
-            return false;
+            if (ports.Count == 0)
+                return false;
+
+            return true;
         }
 
         private bool DayIsExceptedFromFee(DateTime currentTime) // See exceptions https://www.transportstyrelsen.se/sv/vagtrafik/Trangselskatt/Trangselskatt-i-goteborg/Tider-och-belopp-i-Goteborg/dagar-da-trangselskatt-inte-tas-ut-i-goteborg/

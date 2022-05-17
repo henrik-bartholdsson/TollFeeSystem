@@ -5,17 +5,17 @@ using TollFeeSystem.VehicleRegistry.Models;
 
 namespace TollFeeSystem.Core
 {
-    public interface IVehicleRegistry
+    public interface IVehicleRegistryService
     {
-        List<string> GetAllVehicleRegistrationNumbers();
+        List<string> GetVehicleRegistrationNumbers();
         Vehicle GetVehicleByRegNr(string regNr);
     }
 
-    public class VehicleRegistry : IVehicleRegistry
+    public class VehicleRegistryService : IVehicleRegistryService
     {
         private VRContext _VrContext;
 
-        public VehicleRegistry()
+        public VehicleRegistryService()
         {
             _VrContext = new VRContext();
             Initialize();
@@ -26,7 +26,7 @@ namespace TollFeeSystem.Core
             return _VrContext.Vehicles.FirstOrDefault(x => x.RegistrationNumber == regNr);
         }
 
-        public List<string> GetAllVehicleRegistrationNumbers()
+        public List<string> GetVehicleRegistrationNumbers()
         {
             return _VrContext.Vehicles.Select(x => x.RegistrationNumber).ToList();
         }
