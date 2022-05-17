@@ -9,7 +9,7 @@ using static TollFeeSystem.Core.StaticData;
 
 namespace TollFeeSystem.Core
 {
-    public class TollFeeSystem : ITollFeeSystem
+    public class TollFeeSystemService : ITollFeeService
     {
         // Use singleton
 
@@ -17,9 +17,9 @@ namespace TollFeeSystem.Core
 
         private TFSContext _TFSContext;
 
-        public TollFeeSystem()
+        public TollFeeSystemService()
         {
-            _vehicleRegistry = new VehicleRegistry();
+            _vehicleRegistry = new VehicleRegistryService();
             _TFSContext = new TFSContext();
             Initialize();
         }

@@ -15,7 +15,7 @@ namespace TollFeeSystem.Simulator
 
         public void Run()
         {
-            var tollFeeSystem = new TollFeeSystem.Core.TollFeeSystem();
+            var tollFeeSystem = new TollFeeSystem.Core.TollFeeSystemService();
             var portalIds = (List<int>)tollFeeSystem.GetPortalIds();
             List<string> vehicleRegistry = (List<string>)tollFeeSystem.GetVehicleRegistrationNumbers();
 
