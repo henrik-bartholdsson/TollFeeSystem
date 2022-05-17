@@ -10,8 +10,8 @@ namespace TollFeeSystem.Simulator
         public static IServiceProvider ConfigurService()
         {
             var provider = new ServiceCollection()
-                .AddSingleton<ITollFeeService, TollFeeSystem.Core.TollFeeSystemService>()
-                .AddScoped<IVehicleRegistry, VehicleRegistryService>()
+                .AddSingleton<ITollFeeService, TollFeeSystem.Core.TollFeeService>()
+                .AddScoped<IVehicleRegistryService, VehicleRegistryService>()
                 .BuildServiceProvider();
 
             return provider;
