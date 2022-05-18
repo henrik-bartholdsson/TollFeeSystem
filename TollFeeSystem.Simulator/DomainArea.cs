@@ -65,6 +65,12 @@ namespace TollFeeSystem.Simulator
                 }
                 Console.WriteLine($"Total \t\t\t\t\t\t {total}");
             }
+
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("End of simulation...");
+            Console.ResetColor();
         }
 
         private void Init(ITollFeeService _tollFeeService)
