@@ -9,14 +9,6 @@ namespace TollFeeSystem.Simulator
             var gothenburg = new DomainArea();
             gothenburg.Run();
 
-
-
-            //var menu = new UImenu();
-
-            //menu.Run();
-
-
-
             Console.ReadKey();
         }
 
