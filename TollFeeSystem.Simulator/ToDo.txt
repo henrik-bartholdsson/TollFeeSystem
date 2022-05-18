@@ -2,16 +2,11 @@
 
 Max en tic per timma
 
-Fixa snyggare sortering
-
-DI
-
-
 in memory db
 
-är github publik?
 
+Portalerna finns i världen och använder systemet: {
 
-Enfilig och tvåfilig portaler
-
-en tvåfilig kan ta två fordon i teorin, dubbla kameror?
+	Enfiliga och tvåfiliga portaler.
+	en tvåfilig kan ta två fordon i teorin, dubbla kameror?
+	}

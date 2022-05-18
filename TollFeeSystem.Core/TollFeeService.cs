@@ -33,11 +33,12 @@ namespace TollFeeSystem.Core
 
             AssignFee(passTrough);
         }
-        public IEnumerable<int> GetPortalIds()
+        public IEnumerable<int> GetPortalIds() // Denna kan tas bort iom portförändring
         {
             return _TFSContext.Portals.Select(x => x.PortalId).ToList();            
         }
-        public IEnumerable<string> GetVehicleRegistrationNumbers()
+
+        public IEnumerable<string> GetVehicleRegistrationNumbers() // Borde kanske hämta regnummer från fordonsregistret i stället.
         {
             var regNumbers = _vehicleRegistry.GetVehicleRegistrationNumbers();
 
@@ -144,7 +145,15 @@ namespace TollFeeSystem.Core
                 VehicleRegistrationNumber = PassTrough.VehicleFromRegistry.RegistrationNumber
             };
 
-            var vehicleOwner = _TFSContext.FeeHeads.FirstOrDefault(x => x.Name == PassTrough.VehicleFromRegistry.Owner.Name);
+            
+            foreach(var h in _TFSContext.FeeHeads)
+            {
+                if(h.Name == PassTrough.VehicleFromRegistry.Owner.Name)
+                {
+                    h.FeeRecords.Add(feeRecord);
+                    return;
+                }
+            }
 
             _TFSContext.FeeHeads.Add(
                 new FeeHead

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using TollFeeSystem.Core.Models;
-using System.Linq;
 using TollFeeSystem.Core.Types.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,11 +18,9 @@ namespace TollFeeSystem.Simulator
 
         public void Run()
         {
-            //var tollFeeSystem = new TollFeeSystem.Core.TollFeeService();
             var portalIds = (List<int>)_tollFeeService.GetPortalIds();
             List<string> vehicleRegistry = (List<string>)_tollFeeService.GetVehicleRegistrationNumbers();
-
-
+            // Byt PassThroughPortal till RegistrerVehicle eller något.
             _tollFeeService.PassThroughPortal(vehicleRegistry[0], DateTime.Parse("2022-05-10T07:11:00"), portalIds[7]);
             _tollFeeService.PassThroughPortal(vehicleRegistry[1], DateTime.Parse("2022-05-10T16:20:00"), portalIds[0]);
             _tollFeeService.PassThroughPortal(vehicleRegistry[2], DateTime.Parse("2022-05-11T07:10:00"), portalIds[1]);
@@ -40,24 +37,33 @@ namespace TollFeeSystem.Simulator
 
             var ownersWithFee = (List<FeeHead>)_tollFeeService.GetLicenseHoldersWithFees();
 
-            ownersWithFee = (List<FeeHead>)ownersWithFee.AsQueryable().OrderBy(x => x.Name).ToList();
-
             Console.Clear();
             Console.WriteLine("Name \t\t Date \t\t time \t\t Fee \t\t Car reg.nr");
             foreach (var x in ownersWithFee)
             {
+                var previouslyDate = "";
                 var total = 0;
+                var dayFee = 0;
                 Console.WriteLine("---------------------------------------------------------------------------");
-                Console.WriteLine(x.Name);
-                foreach (var y in x.FeeRecords)
+                Console.Write(x.Name);
+                foreach (var y in x.FeeRecords) // Jag måste separera dagarna på något bra sätt...
                 {
-                    Console.WriteLine($"\t\t {y.FeeTime.Date.ToString("yyyy-MM-dd")}");
-                    foreach (var z in x.FeeRecords)
+                    if(previouslyDate != y.FeeTime.Date.ToString("yyyy-MM-dd"))
                     {
-                        Console.WriteLine($"\t\t\t\t {z.FeeTime.ToString("HH:mm")} \t\t {z.FeeAmount} \t\t {z.VehicleRegistrationNumber}");
+                        Console.CursorLeft = 7;
+                        Console.Write($"\t\t {y.FeeTime.Date.ToString("yyyy-MM-dd")}");
+                        //if(previouslyDate != "")
+                        //Console.WriteLine($"Sum (max 60/day) \t\t\t\t {dayFee}");
+                        previouslyDate = y.FeeTime.Date.ToString("yyyy-MM-dd");
+                        //dayFee = 0;
                     }
-                    Console.WriteLine($"Sum (max 60/day) \t\t\t\t {y.FeeAmount}");
-                    total += y.FeeAmount;
+                    Console.CursorLeft = 5;
+                    Console.WriteLine($"\t\t\t\t {y.FeeTime.ToString("HH:mm")} \t\t {y.FeeAmount} \t\t {y.VehicleRegistrationNumber}");
+                        dayFee += y.FeeAmount;
+                        total += y.FeeAmount;
+
+                    //if (previouslyDate != y.FeeTime.Date.ToString("yyyy-MM-dd"))
+                    //    Console.WriteLine($"Sum (max 60/day) \t\t\t\t {dayFee}");
                 }
                 Console.WriteLine($"Total \t\t\t\t\t\t {total}");
 
