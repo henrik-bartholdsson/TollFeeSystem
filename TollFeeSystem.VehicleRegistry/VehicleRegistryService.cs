@@ -40,7 +40,7 @@ namespace TollFeeSystem.Core
             _VrContext.LicenseHolders = new List<LicenseHolder>();
             _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Neo", ResidentialAddress = "Backa" });
             _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Ripley", ResidentialAddress = "Backa" });
-            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Elizabeth.", ResidentialAddress = "Mölndal" });
+            _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Elizabeth", ResidentialAddress = "Mölndal" });
             _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Luke", ResidentialAddress = "Frölunda" });
             _VrContext.LicenseHolders.Add(new LicenseHolder() { Name = "Bilbo", ResidentialAddress = "Torslanda" });
 
