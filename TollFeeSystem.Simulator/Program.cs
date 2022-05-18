@@ -1,4 +1,7 @@
 ﻿using System;
+using TollFeeSystem.Core;
+using TollFeeSystem.Core.Types.Contracts;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TollFeeSystem.Simulator
 {
@@ -6,10 +9,14 @@ namespace TollFeeSystem.Simulator
     {
         static void Main(string[] args)
         {
-            var gothenburg = new DomainArea();
-            gothenburg.Run();
+            var container = Startup.ConfigurService();
 
-            Console.ReadKey();
+            var gothenburg = new DomainArea(
+                container.GetService<ITollFeeService>(),
+                container.GetService<IVehicleRegistryService>()
+                );
+
+            gothenburg.Run();
         }
 
     }

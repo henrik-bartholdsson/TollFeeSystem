@@ -2,22 +2,20 @@
 using System.Collections.Generic;
 using TollFeeSystem.Core.Models;
 using TollFeeSystem.Core.Types.Contracts;
-using Microsoft.Extensions.DependencyInjection;
 using TollFeeSystem.Core;
 
 namespace TollFeeSystem.Simulator
 {
     public class DomainArea
     {
-        private List<Portal> _portals;
         private readonly IVehicleRegistryService _vrService;
         private readonly ITollFeeService _tfService;
+        private List<Portal> _portals;
 
-        public DomainArea()
+        public DomainArea(ITollFeeService tfService, IVehicleRegistryService vrService)
         {
-            var container = Startup.ConfigurService();
-            _tfService = container.GetService<ITollFeeService>();
-            _vrService = container.GetRequiredService<IVehicleRegistryService>();
+            _tfService = tfService;
+            _vrService = vrService;
 
             Init(_tfService);
         }
