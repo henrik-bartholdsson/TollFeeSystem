@@ -3,10 +3,3 @@
 Max en tic per timma
 
 in memory db
-
-
-Portalerna finns i världen och använder systemet: {
-
-	Enfiliga och tvåfiliga portaler.
-	en tvåfilig kan ta två fordon i teorin, dubbla kameror?
-	}
