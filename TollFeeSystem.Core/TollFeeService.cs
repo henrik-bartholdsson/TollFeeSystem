@@ -12,7 +12,6 @@ namespace TollFeeSystem.Core
     public class TollFeeService : ITollFeeService
     {
         private IVehicleRegistryService _vehicleRegistry;
-
         private TFSContext _TFSContext;
 
         public TollFeeService(IVehicleRegistryService vehicleRegistry)
@@ -33,24 +32,7 @@ namespace TollFeeSystem.Core
 
             AssignFee(passTrough);
         }
-        public IEnumerable<int> GetPortalIds() // Denna kan tas bort iom portförändring
-        {
-            return _TFSContext.Portals.Select(x => x.PortalId).ToList();            
-        }
 
-        public IEnumerable<string> GetVehicleRegistrationNumbers() // Borde kanske hämta regnummer från fordonsregistret i stället.
-        {
-            var regNumbers = _vehicleRegistry.GetVehicleRegistrationNumbers();
-
-            if (regNumbers == null)
-                throw new Exception("Log. Connection to vehicle registry failed. Store information and try again later.");
-
-            if (regNumbers.Count == 0)
-                throw new Exception("Somone did truncate on the vehicle database, probably my friend Jim...");
-
-
-            return regNumbers;
-        }
         public IEnumerable<FeeHead> GetLicenseHoldersWithFees()
         {
             var a = _TFSContext.FeeHeads;
@@ -63,19 +45,10 @@ namespace TollFeeSystem.Core
 
         #region Helpers
 
-        private bool VehicleTypeExceptedFromFee(Vehicle vehicle)
-        {
-            var exceptedVehicleTypes = _TFSContext.FeeExceptionVehicles;
-
-            foreach (var v in exceptedVehicleTypes)
-                if (v.VehicleType == vehicle.VehicleType)
-                    return true;
-
-            return false;
-        }
+      
         private int GetAmountOfFee(PassTroughDto PassTrough)
         {
-            var exceptionDay = DayIsExceptedFromFee(PassTrough.PassTroughTime);
+            var exceptionDay = ExceptionByDate(PassTrough.PassTroughTime);
             if (exceptionDay)
                 return 0;
 
@@ -111,13 +84,24 @@ namespace TollFeeSystem.Core
             return true;
         }
 
-        private bool DayIsExceptedFromFee(DateTime currentTime) // See exceptions https://www.transportstyrelsen.se/sv/vagtrafik/Trangselskatt/Trangselskatt-i-goteborg/Tider-och-belopp-i-Goteborg/dagar-da-trangselskatt-inte-tas-ut-i-goteborg/
+        private bool ExceptionByDate(DateTime currentTime) // See exceptions https://www.transportstyrelsen.se/sv/vagtrafik/Trangselskatt/Trangselskatt-i-goteborg/Tider-och-belopp-i-Goteborg/dagar-da-trangselskatt-inte-tas-ut-i-goteborg/
         {
             if (currentTime.DayOfWeek == DayOfWeek.Saturday || currentTime.DayOfWeek == DayOfWeek.Sunday)
                 return true;
 
             if (currentTime.Month == 6)
                 return true;
+
+            return false;
+        }
+
+        private bool ExceptionByVehicleType(Vehicle vehicle)
+        {
+            var exceptedVehicleTypes = _TFSContext.FeeExceptionVehicles;
+
+            foreach (var v in exceptedVehicleTypes)
+                if (v.VehicleType == vehicle.VehicleType)
+                    return true;
 
             return false;
         }
@@ -132,7 +116,7 @@ namespace TollFeeSystem.Core
                 return;
             }
 
-            var excepted = VehicleTypeExceptedFromFee(PassTrough.VehicleFromRegistry);
+            var excepted = ExceptionByVehicleType(PassTrough.VehicleFromRegistry);
             if (excepted)
                 return;
 
@@ -167,15 +151,15 @@ namespace TollFeeSystem.Core
         {
             _TFSContext.FeeHeads = new List<FeeHead>();
 
-            _TFSContext.Portals = new List<Portal>();
-            _TFSContext.Portals.Add(new Portal { PortalId = 11, PortalNameAddress = "Tingstad North", FeeExceptionsByResidentialAddress = new List<string>() });
-            _TFSContext.Portals.Add(new Portal { PortalId = 12, PortalNameAddress = "Tingstad South", FeeExceptionsByResidentialAddress = new List<string>() });
-            _TFSContext.Portals.Add(new Portal { PortalId = 13, PortalNameAddress = "E6 North Entrance", FeeExceptionsByResidentialAddress = new List<string>() });
-            _TFSContext.Portals.Add(new Portal { PortalId = 14, PortalNameAddress = "E6 North Departure", FeeExceptionsByResidentialAddress = new List<string>() });
-            _TFSContext.Portals.Add(new Portal { PortalId = 13, PortalNameAddress = "E6 South Entrance", FeeExceptionsByResidentialAddress = new List<string>() });
-            _TFSContext.Portals.Add(new Portal { PortalId = 14, PortalNameAddress = "E6 South Departure", FeeExceptionsByResidentialAddress = new List<string>() });
-            _TFSContext.Portals.Add(new Portal { PortalId = 17, PortalNameAddress = "Backa Entrance", FeeExceptionsByResidentialAddress = new List<string> { "Backa" } });
-            _TFSContext.Portals.Add(new Portal { PortalId = 18, PortalNameAddress = "Backa Departure", FeeExceptionsByResidentialAddress = new List<string> { "Backa" } });
+            //_TFSContext.Portals = new List<Portal>();
+            //_TFSContext.Portals.Add(new Portal { PortalId = 11, PortalNameAddress = "Tingstad North", FeeExceptionsByResidentialAddress = new List<string>() });
+            //_TFSContext.Portals.Add(new Portal { PortalId = 12, PortalNameAddress = "Tingstad South", FeeExceptionsByResidentialAddress = new List<string>() });
+            //_TFSContext.Portals.Add(new Portal { PortalId = 13, PortalNameAddress = "E6 North Entrance", FeeExceptionsByResidentialAddress = new List<string>() });
+            //_TFSContext.Portals.Add(new Portal { PortalId = 14, PortalNameAddress = "E6 North Departure", FeeExceptionsByResidentialAddress = new List<string>() });
+            //_TFSContext.Portals.Add(new Portal { PortalId = 13, PortalNameAddress = "E6 South Entrance", FeeExceptionsByResidentialAddress = new List<string>() });
+            //_TFSContext.Portals.Add(new Portal { PortalId = 14, PortalNameAddress = "E6 South Departure", FeeExceptionsByResidentialAddress = new List<string>() });
+            //_TFSContext.Portals.Add(new Portal { PortalId = 17, PortalNameAddress = "Backa Entrance", FeeExceptionsByResidentialAddress = new List<string> { "Backa" } });
+            //_TFSContext.Portals.Add(new Portal { PortalId = 18, PortalNameAddress = "Backa Departure", FeeExceptionsByResidentialAddress = new List<string> { "Backa" } });
 
             _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("06:00:00"), End = DateTime.Parse("06:29:59"), Amount = (int)FeeAmount.Low });
             _TFSContext.FeeDefinitions.Add(new FeeDefinition { Start = DateTime.Parse("06:30:00"), End = DateTime.Parse("06:59:59"), Amount = (int)FeeAmount.Medium });
