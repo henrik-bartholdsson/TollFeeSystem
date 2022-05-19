@@ -42,7 +42,7 @@ namespace TollFeeSystem.Simulator
             var ownersWithFee = (List<FeeHead>)_tfService.GetLicenseHoldersWithFees();
 
             Console.Clear();
-            Console.WriteLine("Name \t\t Date \t\t Time \t\t Fee \t\t Reg.nr");
+            Console.WriteLine("Name \t\t Date \t\t Time \t\t Fee (SEK) \t\t Reg.nr");
             foreach (var x in ownersWithFee)
             {
                 var previouslyDate = "";
