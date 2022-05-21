@@ -3,8 +3,9 @@ using static TollFeeSystem.Core.StaticData;
 
 namespace TollFeeSystem.Core.Models
 {
-    internal class FeeExceptionVehicle
+    public class FeeExceptionVehicle
     {
+        public int Id { get; set; }
         public VehicleType VehicleType { get; set; }
     }
 }
