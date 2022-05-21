@@ -52,14 +52,14 @@ namespace TollFeeSystem.Core
 
         private int GetAmountOfFee(PassTroughDto PassTrough)
         {
-            var exceptionDay = ExceptionByDate(PassTrough.PassTroughTime);
+            var exceptionDay = DateExcepted(PassTrough.PassTroughTime);
             if (exceptionDay)
                 return 0;
 
-            var addressException = ExceptionByAddress(PassTrough);
+
+            var addressException = AddressExcepted(PassTrough);
             if (addressException)
                 return 0;
-
 
 
             foreach (var fd in _TFSContext.FeeDefinitions)
@@ -72,7 +72,7 @@ namespace TollFeeSystem.Core
             return 0;
         }
 
-        private bool ExceptionByAddress(PassTroughDto PassTrough) // Ska korta ned logiken senare.
+        private bool AddressExcepted(PassTroughDto PassTrough) // Ska korta ned logiken senare.
         {
             var exAddresses = _TFSContext.FeeExceptionsByResidentialAddresses.Where(x => x != null).ToList();   
             
@@ -90,7 +90,7 @@ namespace TollFeeSystem.Core
             return true;
         }
 
-        private bool ExceptionByDate(DateTime currentTime) // See exceptions https://www.transportstyrelsen.se/sv/vagtrafik/Trangselskatt/Trangselskatt-i-goteborg/Tider-och-belopp-i-Goteborg/dagar-da-trangselskatt-inte-tas-ut-i-goteborg/
+        private bool DateExcepted(DateTime currentTime) // See exceptions https://www.transportstyrelsen.se/sv/vagtrafik/Trangselskatt/Trangselskatt-i-goteborg/Tider-och-belopp-i-Goteborg/dagar-da-trangselskatt-inte-tas-ut-i-goteborg/
         {
             if (currentTime.DayOfWeek == DayOfWeek.Saturday || currentTime.DayOfWeek == DayOfWeek.Sunday)
                 return true;
@@ -101,7 +101,7 @@ namespace TollFeeSystem.Core
             return false;
         }
 
-        private bool ExceptionByVehicleType(Vehicle vehicle)
+        private bool VehicleTypeExcepted(Vehicle vehicle)
         {
             var exceptedVehicleTypes = _TFSContext.FeeExceptionVehicles;
 
@@ -122,7 +122,7 @@ namespace TollFeeSystem.Core
                 return;
             }
 
-            var excepted = ExceptionByVehicleType(PassTrough.VehicleFromRegistry);
+            var excepted = VehicleTypeExcepted(PassTrough.VehicleFromRegistry);
             if (excepted)
                 return;
 
