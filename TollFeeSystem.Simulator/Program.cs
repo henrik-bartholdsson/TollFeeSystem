@@ -1,7 +1,7 @@
-﻿using System;
-using TollFeeSystem.Core;
+﻿using TollFeeSystem.Core;
 using TollFeeSystem.Core.Types.Contracts;
 using Microsoft.Extensions.DependencyInjection;
+using TollFeeSystem.Core.Models;
 
 namespace TollFeeSystem.Simulator
 {
@@ -15,6 +15,14 @@ namespace TollFeeSystem.Simulator
                 container.GetService<ITollFeeService>(),
                 container.GetService<IVehicleRegistryService>()
                 );
+
+            var ts = new TestService(container.GetService<TfsContext>());
+
+            ts.AddFeeRecord();
+
+
+            var records = ts.GetRecords();
+
 
             gothenburg.Run();
         }

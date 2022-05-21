@@ -11,11 +11,11 @@ namespace TollFeeSystem.Core
         Vehicle GetVehicleByRegNr(string regNr);
     }
 
-    public class VehicleRegistryService : IVehicleRegistryService
+    public class VRService : IVehicleRegistryService
     {
         private VRContext _VrContext;
 
-        public VehicleRegistryService()
+        public VRService()
         {
             _VrContext = new VRContext();
             Initialize();

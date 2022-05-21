@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using TollFeeSystem.Core.Models;
 using TollFeeSystem.Core.Types.Contracts;
 using TollFeeSystem.Core;
+using TollFeeSystem.Core.Dto;
+using System.Linq;
 
 namespace TollFeeSystem.Simulator
 {
@@ -10,7 +12,7 @@ namespace TollFeeSystem.Simulator
     {
         private readonly IVehicleRegistryService _vrService;
         private readonly ITollFeeService _tfService;
-        private List<Portal> _portals;
+        private List<PortalDto> _portals;
 
         public DomainArea(ITollFeeService tfService, IVehicleRegistryService vrService)
         {
@@ -75,16 +77,31 @@ namespace TollFeeSystem.Simulator
 
         private void Init(ITollFeeService _tollFeeService)
         {
-            _portals = new List<Portal>();
-            _portals.Add(new Portal(_tollFeeService) { PortalId = 11, PortalNameAddress = "Tingstad North", FeeExceptionsByResidentialAddress = new List<string>() });
-            _portals.Add(new Portal(_tollFeeService) { PortalId = 12, PortalNameAddress = "Tingstad South", FeeExceptionsByResidentialAddress = new List<string>() });
-            _portals.Add(new Portal(_tollFeeService) { PortalId = 13, PortalNameAddress = "E6 North Entrance", FeeExceptionsByResidentialAddress = new List<string>() });
-            _portals.Add(new Portal(_tollFeeService) { PortalId = 14, PortalNameAddress = "E6 North Departure", FeeExceptionsByResidentialAddress = new List<string>() });
-            _portals.Add(new Portal(_tollFeeService) { PortalId = 13, PortalNameAddress = "E6 South Entrance", FeeExceptionsByResidentialAddress = new List<string>() });
-            _portals.Add(new Portal(_tollFeeService) { PortalId = 14, PortalNameAddress = "E6 South Departure", FeeExceptionsByResidentialAddress = new List<string>() });
-            _portals.Add(new Portal(_tollFeeService) { PortalId = 17, PortalNameAddress = "Backa Entrance", FeeExceptionsByResidentialAddress = new List<string> { "Backa" } });
-            _portals.Add(new Portal(_tollFeeService) { PortalId = 18, PortalNameAddress = "Backa Departure", FeeExceptionsByResidentialAddress = new List<string> { "Backa" } });
+            var portsData = _tfService.GetPortalsAsync().Result;
+            _portals = new List<PortalDto>();
+
+            foreach (var p in portsData)
+                _portals.Add(
+                    new PortalDto(_tollFeeService)
+                    {
+                        FeeExceptionsByResidentialAddress = GetAddresses(p),
+                        PortalNameAddress = p.PortalNameAddress,
+                        PortalId = p.Id
+                    });
+
+
+        }
+
+        private List<string> GetAddresses(Portal p)
+        {
+            if(p.FeeExceptionsByResidentialAddress != null)
+            return p.FeeExceptionsByResidentialAddress.Select(x => x.Address).ToList();
+
+            return new List<string>();
         }
 
     }
 }
+
+
+// Måste knyta portal till adress som inte ska ha avgift
