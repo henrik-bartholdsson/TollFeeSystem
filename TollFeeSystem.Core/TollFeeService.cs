@@ -118,7 +118,7 @@ namespace TollFeeSystem.Core
                 .Where(x => x.Name == PassTrough.VehicleFromRegistry.Owner.Name && x.Day.Date == PassTrough.PassTroughTime.Date)
                 .Select(x => x.FeeRecords
                 .Where(x => x.FeeTime.Date == PassTrough.PassTroughTime.Date &&
-                    x.FeeTime.TimeOfDay > PassTrough.PassTroughTime.AddHours(-1).TimeOfDay))
+                    x.FeeTime.TimeOfDay > PassTrough.PassTroughTime.AddHours(-StaticData.MaxOneFeePerUnit).TimeOfDay))
                 .FirstOrDefaultAsync();
 
             if(listOfRecords != null)
@@ -178,7 +178,7 @@ namespace TollFeeSystem.Core
 
             if (feeHead != null)
             {
-                feeHead.FeeSum = (feeHead.FeeSum + feeAmount) > 60 ? 60 :
+                feeHead.FeeSum = (feeHead.FeeSum + feeAmount) > StaticData.MaxFeePerDay ? StaticData.MaxFeePerDay :
                     feeHead.FeeSum += feeAmount;
 
                 feeHead.FeeRecords.Add(

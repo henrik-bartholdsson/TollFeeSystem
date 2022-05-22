@@ -47,7 +47,7 @@ namespace TollFeeSystem.Simulator
             _portals[5].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-22T16:08:00")); // Will be excluded because it's sunday
             _portals[1].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-23T10:23:00"));
             _portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-23T10:56:00"));
-            _portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2021-12-24T12:56:00"));
+            _portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2021-12-24T12:56:00")); // Christmas excluded
 
             var ownersWithFee = _tfService.GetLicenseHoldersWithFeesAwait().Result.ToList();
 
