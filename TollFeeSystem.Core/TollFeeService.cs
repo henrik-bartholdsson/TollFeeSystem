@@ -127,44 +127,18 @@ namespace TollFeeSystem.Core
             return false;
         }
 
-        private async void StorePassTroughAsync(PassTroughDto PassTrough)
+        private async void SaveFeeHeadAsync(FeeHead feeHead)
         {
-            var feeHead = await _TFSContext.FeeHeads.Where(x =>
+            _TFSContext.FeeHeads.Update(feeHead);
+            await _TFSContext.SaveChangesAsync();
+        }
+
+        private async Task<FeeHead> GetFeeHeadAsync(PassTroughDto PassTrough)
+        {
+            return await _TFSContext.FeeHeads.Where(x =>
                 x.Name == PassTrough.VehicleFromRegistry.Owner.Name &&
                 x.Day.Day == PassTrough.PassTroughTime.Day &&
                 x.RegNr == PassTrough.VehicleFromRegistry.RegistrationNumber).FirstOrDefaultAsync();
-
-            if (feeHead != null)
-            {
-                feeHead.FeeSum += PassTrough.FeeAmount;
-
-                feeHead.FeeRecords.Add(
-                    new FeeRecord
-                    {
-                        FeeTime = PassTrough.PassTroughTime,
-                        VehicleRegistrationNumber = PassTrough.VehicleFromRegistry.RegistrationNumber,
-                        ExceptionNote = PassTrough.ExceptionNote,
-                    });
-                _TFSContext.SaveChanges();
-                return;
-            }
-
-            feeHead = new FeeHead()
-            {
-                Day = PassTrough.PassTroughTime,
-                FeeSum = PassTrough.FeeAmount,
-                Name = PassTrough.VehicleFromRegistry.Owner.Name,
-                RegNr = PassTrough.VehicleFromRegistry.RegistrationNumber,
-                FeeRecords = new List<FeeRecord>()
-                { new FeeRecord {
-                    FeeTime = PassTrough.PassTroughTime,
-                    VehicleRegistrationNumber = PassTrough.VehicleFromRegistry.RegistrationNumber,
-                    ExceptionNote = PassTrough.ExceptionNote
-                } }
-            };
-
-            _TFSContext.FeeHeads.Add(feeHead);
-            _TFSContext.SaveChanges();
         }
 
         private async void AssignFee(PassTroughDto PassTrough)
@@ -181,7 +155,7 @@ namespace TollFeeSystem.Core
             if (addressException)
                 PassTrough.ExceptionNote = "A";
 
-                var exceptionDay = DateExcepted(PassTrough.PassTroughTime);
+            var exceptionDay = DateExcepted(PassTrough.PassTroughTime);
             if (exceptionDay)
                 PassTrough.ExceptionNote = "H";
 
@@ -193,14 +167,41 @@ namespace TollFeeSystem.Core
             if (passedLessThenAnHour)
                 return;
 
-            if(String.IsNullOrEmpty(PassTrough.ExceptionNote))
+            var feeAmount = GetAmountOfFeeAsync(PassTrough).Result;
+
+            var feeHead = GetFeeHeadAsync(PassTrough).Result;
+
+            if (feeHead != null)
             {
-                PassTrough.FeeAmount = 
-                    PassTrough.FeeAmount + GetAmountOfFeeAsync(PassTrough).Result > 60 ? 60 : 
-                    PassTrough.FeeAmount + GetAmountOfFeeAsync(PassTrough).Result;
+                feeHead.FeeSum = (feeHead.FeeSum + feeAmount) > 60 ? 60 :
+                    feeHead.FeeSum += feeAmount;
+
+                feeHead.FeeRecords.Add(
+                    new FeeRecord
+                    {
+                        FeeTime = PassTrough.PassTroughTime,
+                        VehicleRegistrationNumber = PassTrough.VehicleFromRegistry.RegistrationNumber,
+                        ExceptionNote = PassTrough.ExceptionNote,
+                    });
+            }
+            else
+            {
+                feeHead = new FeeHead()
+                {
+                    Day = PassTrough.PassTroughTime,
+                    FeeSum = feeAmount,
+                    Name = PassTrough.VehicleFromRegistry.Owner.Name,
+                    RegNr = PassTrough.VehicleFromRegistry.RegistrationNumber,
+                    FeeRecords = new List<FeeRecord>()
+                { new FeeRecord {
+                    FeeTime = PassTrough.PassTroughTime,
+                    VehicleRegistrationNumber = PassTrough.VehicleFromRegistry.RegistrationNumber,
+                    ExceptionNote = PassTrough.ExceptionNote
+                } }
+                };
             }
 
-            StorePassTroughAsync(PassTrough);
+            SaveFeeHeadAsync(feeHead);
         }
 
         private void Initialize()
