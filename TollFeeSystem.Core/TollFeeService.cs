@@ -35,10 +35,12 @@ namespace TollFeeSystem.Core
             AssignFee(passTrough);
         }
 
-        public IEnumerable<FeeHead> GetLicenseHoldersWithFees()
+
+
+        #region Used only by simulation sequence
+        public async Task<IEnumerable<FeeHead>> GetLicenseHoldersWithFeesAwait()
         {
-            var a = _TFSContext.FeeHeads.Where(x => x.FeeRecords.Count > 0).ToList(); // Remove
-            return _TFSContext.FeeHeads.Where(x => x.FeeRecords.Count > 0).ToList();
+            return await _TFSContext.FeeHeads.Where(x => x != null).ToListAsync();
         }
 
         public async Task<IEnumerable<Portal>> GetPortalsAsync()
@@ -46,23 +48,19 @@ namespace TollFeeSystem.Core
             return await _TFSContext.Portals.Where(x => x != null).ToListAsync();
         }
 
+        #endregion
 
 
-        #region Helpers
 
-        private int GetAmountOfFee(PassTroughDto PassTrough)
+
+
+        #region Private helpers
+
+        private async Task<int> GetAmountOfFeeAsync(PassTroughDto PassTrough)
         {
-            var exceptionDay = DateExcepted(PassTrough.PassTroughTime);
-            if (exceptionDay)
-                return 0;
+            var feeDefinitions = await _TFSContext.FeeDefinitions.Where(x => x != null).ToListAsync();
 
-
-            var addressException = AddressExcepted(PassTrough);
-            if (addressException)
-                return 0;
-
-
-            foreach (var fd in _TFSContext.FeeDefinitions)
+            foreach (var fd in feeDefinitions)
             {
                 if (PassTrough.PassTroughTime.TimeOfDay >= fd.Start.TimeOfDay &&
                      PassTrough.PassTroughTime.TimeOfDay <= fd.End.TimeOfDay)
@@ -72,14 +70,12 @@ namespace TollFeeSystem.Core
             return 0;
         }
 
-        private bool AddressExcepted(PassTroughDto PassTrough) // Ska korta ned logiken senare.
+        private async Task<bool> AddressExceptedAsync(PassTroughDto PassTrough)
         {
-            var exAddresses = _TFSContext.FeeExceptionsByResidentialAddresses.Where(x => x != null).ToList();
-
-            var ports = _TFSContext.Portals.Where(
+            var ports = await _TFSContext.Portals.Where(
                 x => x.Id == PassTrough.PortalId && x.FeeExceptionsByResidentialAddress.Any(
                     x => x.Address == PassTrough.VehicleFromRegistry.Owner.ResidentialAddress
-                    )).ToList();
+                    )).ToListAsync();
 
             if (ports == null)
                 return false;
@@ -101,9 +97,9 @@ namespace TollFeeSystem.Core
             return false;
         }
 
-        private bool VehicleTypeExcepted(Vehicle vehicle)
+        private async Task<bool> VehicleTypeExceptedAsync(Vehicle vehicle)
         {
-            var exceptedVehicleTypes = _TFSContext.FeeExceptionVehicles;
+            var exceptedVehicleTypes = await _TFSContext.FeeExceptionVehicles.ToListAsync();
 
             foreach (var v in exceptedVehicleTypes)
                 if (v.VehicleType == vehicle.VehicleType)
@@ -111,6 +107,7 @@ namespace TollFeeSystem.Core
 
             return false;
         }
+
         private async Task<bool> HasPassedLessThenOneHourAsync(PassTroughDto PassTrough) // Ska föränkla
         {
             var head = await _TFSContext.FeeHeads.Where(
@@ -130,9 +127,49 @@ namespace TollFeeSystem.Core
             return false;
         }
 
+        private async void StorePassTroughAsync(PassTroughDto PassTrough)
+        {
+            var feeHead = await _TFSContext.FeeHeads.Where(x =>
+                x.Name == PassTrough.VehicleFromRegistry.Owner.Name &&
+                x.Day.Day == PassTrough.PassTroughTime.Day &&
+                x.RegNr == PassTrough.VehicleFromRegistry.RegistrationNumber).FirstOrDefaultAsync();
+
+            if (feeHead != null)
+            {
+                feeHead.FeeSum += PassTrough.FeeAmount;
+
+                feeHead.FeeRecords.Add(
+                    new FeeRecord
+                    {
+                        FeeTime = PassTrough.PassTroughTime,
+                        VehicleRegistrationNumber = PassTrough.VehicleFromRegistry.RegistrationNumber,
+                        ExceptionNote = PassTrough.ExceptionNote,
+                    });
+                _TFSContext.SaveChanges();
+                return;
+            }
+
+            feeHead = new FeeHead()
+            {
+                Day = PassTrough.PassTroughTime,
+                FeeSum = PassTrough.FeeAmount,
+                Name = PassTrough.VehicleFromRegistry.Owner.Name,
+                RegNr = PassTrough.VehicleFromRegistry.RegistrationNumber,
+                FeeRecords = new List<FeeRecord>()
+                { new FeeRecord {
+                    FeeTime = PassTrough.PassTroughTime,
+                    VehicleRegistrationNumber = PassTrough.VehicleFromRegistry.RegistrationNumber,
+                    ExceptionNote = PassTrough.ExceptionNote
+                } }
+            };
+
+            _TFSContext.FeeHeads.Add(feeHead);
+            _TFSContext.SaveChanges();
+        }
+
         private async void AssignFee(PassTroughDto PassTrough)
         {
-            PassTrough.VehicleFromRegistry = _vehicleRegistry.GetVehicleByRegNr(PassTrough.InputRegNr);
+            PassTrough.VehicleFromRegistry = _vehicleRegistry.GetVehicleByRegNr(PassTrough.InputRegNr); // Async in a real case.
 
             if (PassTrough.VehicleFromRegistry == null)
             {
@@ -140,44 +177,30 @@ namespace TollFeeSystem.Core
                 return;
             }
 
-            var excepted = VehicleTypeExcepted(PassTrough.VehicleFromRegistry);
-            if (excepted)
+            var addressException = AddressExceptedAsync(PassTrough).Result;
+            if (addressException)
+                PassTrough.ExceptionNote = "A";
+
+                var exceptionDay = DateExcepted(PassTrough.PassTroughTime);
+            if (exceptionDay)
+                PassTrough.ExceptionNote = "H";
+
+            var vehicleTypeExcepted = VehicleTypeExceptedAsync(PassTrough.VehicleFromRegistry).Result;
+            if (vehicleTypeExcepted)
                 return;
 
-            var lessThenAnHour = await HasPassedLessThenOneHourAsync(PassTrough);
-            if (lessThenAnHour)
+            var passedLessThenAnHour = await HasPassedLessThenOneHourAsync(PassTrough);
+            if (passedLessThenAnHour)
                 return;
 
-            var amountOfFee = GetAmountOfFee(PassTrough);
-
-            var feeRecord = new FeeRecord
+            if(String.IsNullOrEmpty(PassTrough.ExceptionNote))
             {
-                FeeAmount = amountOfFee,
-                FeeTime = PassTrough.PassTroughTime,
-                VehicleRegistrationNumber = PassTrough.VehicleFromRegistry.RegistrationNumber
-            };
-
-
-            foreach (var h in _TFSContext.FeeHeads)
-            {
-                if (h.Name == PassTrough.VehicleFromRegistry.Owner.Name)
-                {
-                    h.FeeRecords.Add(feeRecord);
-                    return;
-                }
+                PassTrough.FeeAmount = 
+                    PassTrough.FeeAmount + GetAmountOfFeeAsync(PassTrough).Result > 60 ? 60 : 
+                    PassTrough.FeeAmount + GetAmountOfFeeAsync(PassTrough).Result;
             }
 
-
-
-
-            _TFSContext.FeeHeads.Add(
-                new FeeHead
-                {
-                    Name = PassTrough.VehicleFromRegistry.Owner.Name,
-                    FeeRecords = new List<FeeRecord> { feeRecord }
-                });
-
-            _TFSContext.SaveChanges();
+            StorePassTroughAsync(PassTrough);
         }
 
         private void Initialize()

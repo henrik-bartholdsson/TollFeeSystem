@@ -8,6 +8,7 @@ namespace TollFeeSystem.Core.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string RegNr { get; set; }
         public DateTime Day { get; set; }
         public int FeeSum { get; set; }
         public List<FeeRecord> FeeRecords { get; set; }

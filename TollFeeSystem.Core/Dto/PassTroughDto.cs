@@ -9,5 +9,7 @@ namespace TollFeeSystem.Core.Dto
         public DateTime PassTroughTime { get; set; }
         public Vehicle VehicleFromRegistry { get; set; }
         public int PortalId { get; set; }
+        public string ExceptionNote { get; set; }
+        public int FeeAmount { get; set; } = 0;
     }
 }
