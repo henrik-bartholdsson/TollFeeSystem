@@ -74,10 +74,10 @@ namespace TollFeeSystem.Core
 
         private bool AddressExcepted(PassTroughDto PassTrough) // Ska korta ned logiken senare.
         {
-            var exAddresses = _TFSContext.FeeExceptionsByResidentialAddresses.Where(x => x != null).ToList();   
-            
+            var exAddresses = _TFSContext.FeeExceptionsByResidentialAddresses.Where(x => x != null).ToList();
+
             var ports = _TFSContext.Portals.Where(
-                x =>x.Id == PassTrough.PortalId && x.FeeExceptionsByResidentialAddress.Any(
+                x => x.Id == PassTrough.PortalId && x.FeeExceptionsByResidentialAddress.Any(
                     x => x.Address == PassTrough.VehicleFromRegistry.Owner.ResidentialAddress
                     )).ToList();
 
@@ -111,8 +111,26 @@ namespace TollFeeSystem.Core
 
             return false;
         }
+        private async Task<bool> HasPassedLessThenOneHourAsync(PassTroughDto PassTrough) // Ska föränkla
+        {
+            var head = await _TFSContext.FeeHeads.Where(
+                x => x.Name == PassTrough.VehicleFromRegistry.Owner.Name)
+                .Include(x => x.FeeRecords).FirstOrDefaultAsync();
 
-        private void AssignFee(PassTroughDto PassTrough)
+            if (head == null)
+                return false;
+
+            var records = head.FeeRecords.Where(x => x.FeeTime.Date == PassTrough.PassTroughTime.Date &&
+            x.FeeTime.TimeOfDay > PassTrough.PassTroughTime.AddHours(-1).TimeOfDay).ToList();
+
+            if (records != null)
+                if (records.Count > 0)
+                    return true;
+
+            return false;
+        }
+
+        private async void AssignFee(PassTroughDto PassTrough)
         {
             PassTrough.VehicleFromRegistry = _vehicleRegistry.GetVehicleByRegNr(PassTrough.InputRegNr);
 
@@ -126,6 +144,10 @@ namespace TollFeeSystem.Core
             if (excepted)
                 return;
 
+            var lessThenAnHour = await HasPassedLessThenOneHourAsync(PassTrough);
+            if (lessThenAnHour)
+                return;
+
             var amountOfFee = GetAmountOfFee(PassTrough);
 
             var feeRecord = new FeeRecord
@@ -135,15 +157,18 @@ namespace TollFeeSystem.Core
                 VehicleRegistrationNumber = PassTrough.VehicleFromRegistry.RegistrationNumber
             };
 
-            
-            foreach(var h in _TFSContext.FeeHeads)
+
+            foreach (var h in _TFSContext.FeeHeads)
             {
-                if(h.Name == PassTrough.VehicleFromRegistry.Owner.Name)
+                if (h.Name == PassTrough.VehicleFromRegistry.Owner.Name)
                 {
                     h.FeeRecords.Add(feeRecord);
                     return;
                 }
             }
+
+
+
 
             _TFSContext.FeeHeads.Add(
                 new FeeHead
@@ -181,16 +206,24 @@ namespace TollFeeSystem.Core
             var feeExceptionsByResidentialAddress2 = new List<FeeExceptionsByResidentialAddress>()
             { new FeeExceptionsByResidentialAddress { Address = "Backa" } };
 
-            _TFSContext.Portals.Add(new Portal() { Id = 11, PortalNameAddress = "Tingstad North"});
-            _TFSContext.Portals.Add(new Portal() { Id = 12, PortalNameAddress = "Tingstad South"});
-            _TFSContext.Portals.Add(new Portal() { Id = 13, PortalNameAddress = "E6 North Entrance"});
-            _TFSContext.Portals.Add(new Portal() { Id = 14, PortalNameAddress = "E6 North Departure"});
-            _TFSContext.Portals.Add(new Portal() { Id = 15, PortalNameAddress = "E6 South Entrance"});
-            _TFSContext.Portals.Add(new Portal() { Id = 16, PortalNameAddress = "E6 South Departure"});
-            _TFSContext.Portals.Add(new Portal() { Id = 17, PortalNameAddress = "Backa Entrance",
-                    FeeExceptionsByResidentialAddress = feeExceptionsByResidentialAddress1 });
-            _TFSContext.Portals.Add(new Portal() { Id = 18, PortalNameAddress = "Backa Departure",
-                    FeeExceptionsByResidentialAddress = feeExceptionsByResidentialAddress2 });
+            _TFSContext.Portals.Add(new Portal() { Id = 11, PortalNameAddress = "Tingstad North" });
+            _TFSContext.Portals.Add(new Portal() { Id = 12, PortalNameAddress = "Tingstad South" });
+            _TFSContext.Portals.Add(new Portal() { Id = 13, PortalNameAddress = "E6 North Entrance" });
+            _TFSContext.Portals.Add(new Portal() { Id = 14, PortalNameAddress = "E6 North Departure" });
+            _TFSContext.Portals.Add(new Portal() { Id = 15, PortalNameAddress = "E6 South Entrance" });
+            _TFSContext.Portals.Add(new Portal() { Id = 16, PortalNameAddress = "E6 South Departure" });
+            _TFSContext.Portals.Add(new Portal()
+            {
+                Id = 17,
+                PortalNameAddress = "Backa Entrance",
+                FeeExceptionsByResidentialAddress = feeExceptionsByResidentialAddress1
+            });
+            _TFSContext.Portals.Add(new Portal()
+            {
+                Id = 18,
+                PortalNameAddress = "Backa Departure",
+                FeeExceptionsByResidentialAddress = feeExceptionsByResidentialAddress2
+            });
 
             _TFSContext.SaveChanges();
         }

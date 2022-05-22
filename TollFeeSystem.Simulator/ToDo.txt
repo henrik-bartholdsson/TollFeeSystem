@@ -1,5 +1,1 @@
-﻿
-
-Max en tic per timma
-
-in memory db
+﻿Fixa snyggare utskrift
