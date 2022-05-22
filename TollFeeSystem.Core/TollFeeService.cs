@@ -86,12 +86,16 @@ namespace TollFeeSystem.Core
             return true;
         }
 
-        private bool DateExcepted(DateTime currentTime) // See exceptions https://www.transportstyrelsen.se/sv/vagtrafik/Trangselskatt/Trangselskatt-i-goteborg/Tider-och-belopp-i-Goteborg/dagar-da-trangselskatt-inte-tas-ut-i-goteborg/
+        private async Task<bool> DateExcepted(DateTime currentTime) // See exceptions https://www.transportstyrelsen.se/sv/vagtrafik/Trangselskatt/Trangselskatt-i-goteborg/Tider-och-belopp-i-Goteborg/dagar-da-trangselskatt-inte-tas-ut-i-goteborg/
         {
             if (currentTime.DayOfWeek == DayOfWeek.Saturday || currentTime.DayOfWeek == DayOfWeek.Sunday)
                 return true;
 
             if (currentTime.Month == 6)
+                return true;
+
+            var customExceptionDays = await _TFSContext.FeeExceptionDays.Where(x => DateTime.Parse(x.Day).Date == currentTime.Date).FirstOrDefaultAsync();
+            if (customExceptionDays != null)
                 return true;
 
             return false;
@@ -163,11 +167,11 @@ namespace TollFeeSystem.Core
             if (addressException)
                 PassTrough.ExceptionNote = "A";
 
-            var exceptionDay = DateExcepted(PassTrough.PassTroughTime);
+            var exceptionDay = DateExcepted(PassTrough.PassTroughTime).Result;
             if (exceptionDay)
                 PassTrough.ExceptionNote = "H";
 
-            if(String.IsNullOrEmpty(PassTrough.ExceptionNote))
+            if (String.IsNullOrEmpty(PassTrough.ExceptionNote))
                 feeAmount = GetAmountOfFeeAsync(PassTrough).Result;
 
             var feeHead = GetFeeHeadAsync(PassTrough).Result;
@@ -223,7 +227,7 @@ namespace TollFeeSystem.Core
             _TFSContext.FeeExceptionVehicles.Add(new FeeExceptionVehicle { VehicleType = VehicleType.Motorbike });
             _TFSContext.FeeExceptionVehicles.Add(new FeeExceptionVehicle { VehicleType = VehicleType.Military });
 
-            _TFSContext.FeeExceptionDays.Add(new FeeExceptionDay { Day = "2022-12-24" });
+            _TFSContext.FeeExceptionDays.Add(new FeeExceptionDay { Day = "2021-12-24" });
 
             var feeExceptionsByResidentialAddress1 = new List<FeeExceptionsByResidentialAddress>()
             { new FeeExceptionsByResidentialAddress { Address = "Backa" } };

@@ -27,27 +27,27 @@ namespace TollFeeSystem.Simulator
         {
             List<string> vehicleRegistry = (List<string>)_vrService.GetVehicleRegistrationNumbers();
 
-            _portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-04-10T07:11:00"));
-            _portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-04-10T09:02:00"));
-            _portals[0].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-10T16:20:00"));
-            _portals[1].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-11T07:10:00"));
-            _portals[0].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-11T16:16:00"));
-            _portals[4].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-12T07:06:00"));
-            _portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T08:08:00"));
-            _portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T09:09:00"));
-            _portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T10:10:00"));
-            _portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T16:10:00"));
-            _portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T17:11:00"));
-            _portals[5].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-12T16:22:00"));
-            _portals[6].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-13T07:12:00"));
-            _portals[5].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-13T11:16:00"));
-            _portals[3].VehicleInteraction(vehicleRegistry[1], DateTime.Parse("2022-05-13T12:01:00"));
-            _portals[3].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-13T12:01:00"));
-            _portals[3].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-13T12:30:00")); // Will be excluded due to 1 hour rule
-            _portals[5].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-22T16:08:00")); // Will be excluded because it's sunday
-            _portals[1].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-23T10:23:00"));
-            _portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-23T10:56:00"));
-            _portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-06-23T12:56:00"));
+            //_portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-04-10T07:11:00"));
+            //_portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-04-10T09:02:00"));
+            //_portals[0].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-10T16:20:00"));
+            //_portals[1].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-11T07:10:00"));
+            //_portals[0].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-11T16:16:00"));
+            //_portals[4].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-12T07:06:00"));
+            //_portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T08:08:00"));
+            //_portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T09:09:00"));
+            //_portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T10:10:00"));
+            //_portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T16:10:00"));
+            //_portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T17:11:00"));
+            //_portals[5].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-12T16:22:00"));
+            //_portals[6].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-13T07:12:00"));
+            //_portals[5].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-13T11:16:00"));
+            //_portals[3].VehicleInteraction(vehicleRegistry[1], DateTime.Parse("2022-05-13T12:01:00"));
+            //_portals[3].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-13T12:01:00"));
+            //_portals[3].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-13T12:30:00")); // Will be excluded due to 1 hour rule
+            //_portals[5].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-22T16:08:00")); // Will be excluded because it's sunday
+            //_portals[1].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-23T10:23:00"));
+            //_portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-23T10:56:00"));
+            _portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2021-12-24T12:56:00"));
 
             var ownersWithFee = _tfService.GetLicenseHoldersWithFeesAwait().Result.ToList();
 
