@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using TollFeeSystem.Core.Models;
 
 namespace TollFeeSystem.Core.Types.Contracts
@@ -8,7 +7,7 @@ namespace TollFeeSystem.Core.Types.Contracts
     public interface ITollFeeService
     {
         void PassThroughPortal(string vehicleRegistrationNumber, DateTime currentTime, int portalId);
-        Task<IEnumerable<FeeHead>> GetLicenseHoldersWithFeesAwait();
-        Task<IEnumerable<Portal>> GetPortalsAsync();
+        IEnumerable<FeeHead> GetLicenseHoldersWithFees();
+        IEnumerable<Portal> GetPortals();
     }
 }
