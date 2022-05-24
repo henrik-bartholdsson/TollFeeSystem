@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using TollFeeSystem.Core;
 using TollFeeSystem.Core.Models;
+using TollFeeSystem.Core.Repository;
+using TollFeeSystem.Core.Repository.Contracts;
+using TollFeeSystem.Core.Service;
 using TollFeeSystem.Core.Types;
 using TollFeeSystem.Core.Types.Contracts;
 using static TollFeeSystem.Core.StaticData;
@@ -17,6 +20,12 @@ namespace TollFeeSystem.Simulator
             var provider = new ServiceCollection()
                 .AddSingleton<ITollFeeService, TollFeeService>()
                 .AddScoped<IVehicleRegistryService, VRService>()
+                .AddTransient<IFeeExceptionVehicleRepository, FeeExceptionVehicleRepository>()
+                .AddTransient<IFeeExceptionDayRepository, FeeExceptionDayRepository>()
+                .AddTransient<IFeeDefinitionRepository, FeeDefinitionRepository>()
+                .AddTransient<IPortalRepository, PortalRepository>()
+                .AddTransient<IFeeHeadRepository, FeeHeadRepository>()
+                .AddTransient<IUnitOfWork, UnitOfWork>()
                 .AddDbContext<TfsContext>(options =>
                 {
                     options.UseInMemoryDatabase("TollFeeDatabase");

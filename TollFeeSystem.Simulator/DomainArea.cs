@@ -49,7 +49,7 @@ namespace TollFeeSystem.Simulator
             _portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-23T10:56:00"));
             _portals[7].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2021-12-24T12:56:00")); // Christmas excluded
 
-            var ownersWithFee = _tfService.GetLicenseHoldersWithFeesAwait().Result.ToList();
+            var ownersWithFee = _tfService.GetLicenseHoldersWithFees().ToList();
 
             Console.Clear();
             Console.WriteLine("Name \t\t Date \t\t Time \t\t Reg.nr \t Sum (SEK)  Note");
@@ -93,7 +93,7 @@ namespace TollFeeSystem.Simulator
 
         private void Init(ITollFeeService _tollFeeService)
         {
-            var portsData = _tfService.GetPortalsAsync().Result;
+            var portsData = _tfService.GetPortals();
             _portals = new List<PortalDto>();
 
             foreach (var p in portsData)

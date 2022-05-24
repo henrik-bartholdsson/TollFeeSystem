@@ -1,25 +1,24 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using TollFeeSystem.Core.Dto;
 using TollFeeSystem.Core.Models;
+using TollFeeSystem.Core.Repository.Contracts;
 using TollFeeSystem.Core.Types;
 using TollFeeSystem.Core.Types.Contracts;
 using static TollFeeSystem.Core.StaticData;
 
-namespace TollFeeSystem.Core
+namespace TollFeeSystem.Core.Service
 {
     public class TollFeeService : ITollFeeService
     {
         private IVehicleRegistryService _vehicleRegistry;
-        private TfsContext _TFSContext;
+        private IUnitOfWork _IUnitOfWork;
 
-        public TollFeeService(IVehicleRegistryService vehicleRegistry, TfsContext TfsContext)
+        public TollFeeService(IVehicleRegistryService vehicleRegistry, IUnitOfWork UnitOfWork)
         {
             _vehicleRegistry = vehicleRegistry;
-            _TFSContext = TfsContext;
+            _IUnitOfWork = UnitOfWork;
         }
 
         public void PassThroughPortal(string vehicleRegistrationNumber, DateTime currentTime, int portalId)
@@ -31,20 +30,20 @@ namespace TollFeeSystem.Core
                 PortalId = portalId
             };
 
-            AssignFeeAsync(passTrough);
+            AssignFee(passTrough);
         }
 
 
 
         #region Used only by simulation sequence
-        public async Task<IEnumerable<FeeHead>> GetLicenseHoldersWithFeesAwait()
+        public IEnumerable<FeeHead> GetLicenseHoldersWithFees()
         {
-            return await _TFSContext.FeeHeads.Where(x => x != null).ToListAsync();
+            return _IUnitOfWork.FeeHeadRepository.GetAll().Result.Where(x => x != null).ToList();
         }
 
-        public async Task<IEnumerable<Portal>> GetPortalsAsync()
+        public IEnumerable<Portal> GetPortals()
         {
-            return await _TFSContext.Portals.Where(x => x != null).ToListAsync();
+            return _IUnitOfWork.PortalRepository.GetAll().Result.Where(x => x != null).ToList();
         }
 
         #endregion
@@ -55,9 +54,9 @@ namespace TollFeeSystem.Core
 
         #region Private helpers
 
-        private async Task<int> GetAmountOfFeeAsync(PassTroughDto PassTrough)
+        private int GetAmountOfFee(PassTroughDto PassTrough)
         {
-            var feeDefinitions = await _TFSContext.FeeDefinitions.Where(x => x != null).ToListAsync();
+            var feeDefinitions = _IUnitOfWork.FeeDefinitionRepository.GetAll().Result.Where(x => x != null).ToList();
 
             foreach (var fd in feeDefinitions)
             {
@@ -69,23 +68,23 @@ namespace TollFeeSystem.Core
             return 0;
         }
 
-        private async Task<bool> AddressExceptedAsync(PassTroughDto PassTrough)
+        private bool AddressExcepted(PassTroughDto PassTrough)
         {
-            var ports = await _TFSContext.Portals.Where(
-                x => x.Id == PassTrough.PortalId && x.FeeExceptionsByResidentialAddress.Any(
-                    x => x.Address == PassTrough.VehicleFromRegistry.Owner.ResidentialAddress
-                    )).ToListAsync();
+            // Nedan rader är fult, ska göra bättre
+            var portal = _IUnitOfWork.PortalRepository.Get(PassTrough.PortalId).Result;
 
-            if (ports == null)
+            if (portal.FeeExceptionsByResidentialAddress == null)
                 return false;
 
-            if (ports.Count == 0)
+            var excepted = portal.FeeExceptionsByResidentialAddress.Where(x => x != null && x.Address == PassTrough.VehicleFromRegistry.Owner.ResidentialAddress).FirstOrDefault();
+
+            if (excepted == null)
                 return false;
 
             return true;
         }
 
-        private async Task<bool> DateExcepted(DateTime currentTime) // See exceptions https://www.transportstyrelsen.se/sv/vagtrafik/Trangselskatt/Trangselskatt-i-goteborg/Tider-och-belopp-i-Goteborg/dagar-da-trangselskatt-inte-tas-ut-i-goteborg/
+        private bool DateExcepted(DateTime currentTime) // See exceptions https://www.transportstyrelsen.se/sv/vagtrafik/Trangselskatt/Trangselskatt-i-goteborg/Tider-och-belopp-i-Goteborg/dagar-da-trangselskatt-inte-tas-ut-i-goteborg/
         {
             if (currentTime.DayOfWeek == DayOfWeek.Saturday || currentTime.DayOfWeek == DayOfWeek.Sunday)
                 return true;
@@ -93,16 +92,19 @@ namespace TollFeeSystem.Core
             if (currentTime.Month == 6)
                 return true;
 
-            var customExceptionDays = await _TFSContext.FeeExceptionDays.Where(x => DateTime.Parse(x.Day).Date == currentTime.Date).FirstOrDefaultAsync();
+            var customExceptionDays = _IUnitOfWork.FeeExceptionDayRepository.GetAll().Result.Where(
+                x => DateTime.Parse(x.Day).Date == currentTime.Date).FirstOrDefault();
+
+
             if (customExceptionDays != null)
                 return true;
 
             return false;
         }
 
-        private async Task<bool> VehicleTypeExceptedAsync(Vehicle vehicle)
+        private bool VehicleTypeExcepted(Vehicle vehicle)
         {
-            var exceptedVehicleTypes = await _TFSContext.FeeExceptionVehicles.ToListAsync();
+            var exceptedVehicleTypes = _IUnitOfWork.FeeExceptionVehicleRepository.GetAll().Result.ToList();
 
             foreach (var v in exceptedVehicleTypes)
                 if (v.VehicleType == vehicle.VehicleType)
@@ -111,37 +113,36 @@ namespace TollFeeSystem.Core
             return false;
         }
 
-        private async Task<bool> HasPassedLessThenOneHourAsync(PassTroughDto PassTrough)
+        private bool HasPassedLessThenOneHour(PassTroughDto PassTrough)
         {
-            var listOfRecords = await _TFSContext.FeeHeads
+            var listOfRecords = _IUnitOfWork.FeeHeadRepository.GetAll().Result
                 .Where(x => x.Name == PassTrough.VehicleFromRegistry.Owner.Name && x.Day.Date == PassTrough.PassTroughTime.Date)
                 .Select(x => x.FeeRecords
                 .Where(x => x.FeeTime.Date == PassTrough.PassTroughTime.Date &&
-                    x.FeeTime.TimeOfDay > PassTrough.PassTroughTime.AddHours(-StaticData.MaxOneFeePerUnit).TimeOfDay))
-                .FirstOrDefaultAsync();
+                    x.FeeTime.TimeOfDay > PassTrough.PassTroughTime.AddHours(-MaxOneFeePerUnit).TimeOfDay))
+                .FirstOrDefault();
 
-            if(listOfRecords != null)
+            if (listOfRecords != null)
                 if (listOfRecords.Count() > 0)
                     return true;
 
-                return false;
+            return false;
         }
 
         private async void SaveFeeHeadAsync(FeeHead feeHead)
         {
-            _TFSContext.FeeHeads.Update(feeHead);
-            await _TFSContext.SaveChangesAsync();
+            _IUnitOfWork.FeeHeadRepository.Update(feeHead);
         }
 
-        private async Task<FeeHead> GetFeeHeadAsync(PassTroughDto PassTrough)
+        private FeeHead GetFeeHead(PassTroughDto PassTrough)
         {
-            return await _TFSContext.FeeHeads.Where(x =>
+            return _IUnitOfWork.FeeHeadRepository.GetAll().Result.Where(x =>
                 x.Name == PassTrough.VehicleFromRegistry.Owner.Name &&
                 x.Day.Date == PassTrough.PassTroughTime.Date &&
-                x.RegNr == PassTrough.VehicleFromRegistry.RegistrationNumber).FirstOrDefaultAsync();
+                x.RegNr == PassTrough.VehicleFromRegistry.RegistrationNumber).FirstOrDefault();
         }
 
-        private async void AssignFeeAsync(PassTroughDto PassTrough)
+        private void AssignFee(PassTroughDto PassTrough)
         {
             int feeAmount = 0;
             PassTrough.VehicleFromRegistry = _vehicleRegistry.GetVehicleByRegNr(PassTrough.InputRegNr);
@@ -152,32 +153,32 @@ namespace TollFeeSystem.Core
                 return;
             }
 
-            
 
-            var vehicleTypeExcepted = VehicleTypeExceptedAsync(PassTrough.VehicleFromRegistry).Result;
+
+            var vehicleTypeExcepted = VehicleTypeExcepted(PassTrough.VehicleFromRegistry);
             if (vehicleTypeExcepted)
                 return;
 
-            var passedLessThenAnHour = await HasPassedLessThenOneHourAsync(PassTrough);
+            var passedLessThenAnHour = HasPassedLessThenOneHour(PassTrough);
             if (passedLessThenAnHour)
                 return;
 
-            var addressException = AddressExceptedAsync(PassTrough).Result;
+            var addressException = AddressExcepted(PassTrough);
             if (addressException)
                 PassTrough.ExceptionNote = "A";
 
-            var exceptionDay = DateExcepted(PassTrough.PassTroughTime).Result;
+            var exceptionDay = DateExcepted(PassTrough.PassTroughTime);
             if (exceptionDay)
                 PassTrough.ExceptionNote = "H";
 
-            if (String.IsNullOrEmpty(PassTrough.ExceptionNote))
-                feeAmount = GetAmountOfFeeAsync(PassTrough).Result;
+            if (string.IsNullOrEmpty(PassTrough.ExceptionNote))
+                feeAmount = GetAmountOfFee(PassTrough);
 
-            var feeHead = GetFeeHeadAsync(PassTrough).Result;
+            var feeHead = GetFeeHead(PassTrough);
 
             if (feeHead != null)
             {
-                feeHead.FeeSum = (feeHead.FeeSum + feeAmount) > StaticData.MaxFeePerDay ? StaticData.MaxFeePerDay :
+                feeHead.FeeSum = feeHead.FeeSum + feeAmount > MaxFeePerDay ? MaxFeePerDay :
                     feeHead.FeeSum += feeAmount;
 
                 feeHead.FeeRecords.Add(
@@ -208,7 +209,7 @@ namespace TollFeeSystem.Core
             SaveFeeHeadAsync(feeHead);
         }
 
-       
+
         #endregion
     }
 }
