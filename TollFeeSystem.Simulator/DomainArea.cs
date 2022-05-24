@@ -39,6 +39,7 @@ namespace TollFeeSystem.Simulator
             _portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T16:10:00"));
             _portals[2].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-12T17:11:00"));
             _portals[5].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-12T16:22:00"));
+            _portals[5].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-12T18:23:00"));
             _portals[6].VehicleInteraction(vehicleRegistry[0], DateTime.Parse("2022-05-13T07:12:00"));
             _portals[5].VehicleInteraction(vehicleRegistry[2], DateTime.Parse("2022-05-13T11:16:00"));
             _portals[3].VehicleInteraction(vehicleRegistry[1], DateTime.Parse("2022-05-13T12:01:00"));
