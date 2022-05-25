@@ -14,7 +14,7 @@ namespace TollFeeSystem.Core.Repository
             _context = context;
         }
 
-        public async Task<Portal> Get(int id)
+        public async Task<Portal> GetAsync(int id)
         {
             return await _context.Portals.Where(x => x.Id == id).FirstOrDefaultAsync();
         }

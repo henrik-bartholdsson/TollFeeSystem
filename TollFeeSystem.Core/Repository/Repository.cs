@@ -9,7 +9,7 @@ namespace TollFeeSystem.Core.Repository
     
     public interface IRepository<TEntity> where TEntity : class
     {
-        public Task<IEnumerable<TEntity>> GetAll();
+        public Task<IEnumerable<TEntity>> GetAllAsync();
 
     }
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
@@ -21,7 +21,7 @@ namespace TollFeeSystem.Core.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAll()
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             var result = await _context.Set<TEntity>().Where(x => x != null).ToListAsync();
             return result;

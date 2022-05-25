@@ -38,12 +38,12 @@ namespace TollFeeSystem.Core.Service
         #region Used only by simulation sequence
         public IEnumerable<FeeHead> GetLicenseHoldersWithFees()
         {
-            return _IUnitOfWork.FeeHeadRepository.GetAll().Result.Where(x => x != null).ToList();
+            return _IUnitOfWork.FeeHeadRepository.GetAllAsync().Result.Where(x => x != null).ToList();
         }
 
         public IEnumerable<Portal> GetPortals()
         {
-            return _IUnitOfWork.PortalRepository.GetAll().Result.Where(x => x != null).ToList();
+            return _IUnitOfWork.PortalRepository.GetAllAsync().Result.Where(x => x != null).ToList();
         }
 
         #endregion
@@ -56,7 +56,7 @@ namespace TollFeeSystem.Core.Service
 
         private int GetAmountOfFee(PassTroughDto PassTrough)
         {
-            var feeDefinitions = _IUnitOfWork.FeeDefinitionRepository.GetAll().Result.Where(x => x != null).ToList();
+            var feeDefinitions = _IUnitOfWork.FeeDefinitionRepository.GetAllAsync().Result.Where(x => x != null).ToList();
 
             foreach (var fd in feeDefinitions)
             {
@@ -71,7 +71,7 @@ namespace TollFeeSystem.Core.Service
         private bool AddressExcepted(PassTroughDto PassTrough)
         {
             // Nedan rader är fult, ska göra bättre
-            var portal = _IUnitOfWork.PortalRepository.Get(PassTrough.PortalId).Result;
+            var portal = _IUnitOfWork.PortalRepository.GetAsync(PassTrough.PortalId).Result;
 
             if (portal.FeeExceptionsByResidentialAddress == null)
                 return false;
@@ -92,7 +92,7 @@ namespace TollFeeSystem.Core.Service
             if (currentTime.Month == 6)
                 return true;
 
-            var customExceptionDays = _IUnitOfWork.FeeExceptionDayRepository.GetAll().Result.Where(
+            var customExceptionDays = _IUnitOfWork.FeeExceptionDayRepository.GetAllAsync().Result.Where(
                 x => DateTime.Parse(x.Day).Date == currentTime.Date).FirstOrDefault();
 
 
@@ -104,7 +104,7 @@ namespace TollFeeSystem.Core.Service
 
         private bool VehicleTypeExcepted(Vehicle vehicle)
         {
-            var exceptedVehicleTypes = _IUnitOfWork.FeeExceptionVehicleRepository.GetAll().Result.ToList();
+            var exceptedVehicleTypes = _IUnitOfWork.FeeExceptionVehicleRepository.GetAllAsync().Result.ToList();
 
             foreach (var v in exceptedVehicleTypes)
                 if (v.VehicleType == vehicle.VehicleType)
@@ -115,7 +115,7 @@ namespace TollFeeSystem.Core.Service
 
         private bool HasPassedLessThenOneHour(PassTroughDto PassTrough)
         {
-            var listOfRecords = _IUnitOfWork.FeeHeadRepository.GetAll().Result
+            var listOfRecords = _IUnitOfWork.FeeHeadRepository.GetAllAsync().Result
                 .Where(x => x.Name == PassTrough.VehicleFromRegistry.Owner.Name && x.Day.Date == PassTrough.PassTroughTime.Date)
                 .Select(x => x.FeeRecords
                 .Where(x => x.FeeTime.Date == PassTrough.PassTroughTime.Date &&
@@ -131,12 +131,12 @@ namespace TollFeeSystem.Core.Service
 
         private async void SaveFeeHeadAsync(FeeHead feeHead)
         {
-            _IUnitOfWork.FeeHeadRepository.Update(feeHead);
+            _IUnitOfWork.FeeHeadRepository.UpdateAsync(feeHead);
         }
 
         private FeeHead GetFeeHead(PassTroughDto PassTrough)
         {
-            return _IUnitOfWork.FeeHeadRepository.GetAll().Result.Where(x =>
+            return _IUnitOfWork.FeeHeadRepository.GetAllAsync().Result.Where(x =>
                 x.Name == PassTrough.VehicleFromRegistry.Owner.Name &&
                 x.Day.Date == PassTrough.PassTroughTime.Date &&
                 x.RegNr == PassTrough.VehicleFromRegistry.RegistrationNumber).FirstOrDefault();

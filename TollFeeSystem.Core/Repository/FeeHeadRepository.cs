@@ -14,10 +14,10 @@ namespace TollFeeSystem.Core.Repository
             _context = context;
         }
 
-        public void Update(FeeHead feeHead)
+        public async void UpdateAsync(FeeHead feeHead)
         {
             _context.FeeHeads.Update(feeHead);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

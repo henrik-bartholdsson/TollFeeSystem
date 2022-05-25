@@ -5,6 +5,6 @@ namespace TollFeeSystem.Core.Repository.Contracts
 {
     public interface IPortalRepository : IRepository<Portal>
     {
-        public Task<Portal> Get(int id);
+        public Task<Portal> GetAsync(int id);
     }
 }

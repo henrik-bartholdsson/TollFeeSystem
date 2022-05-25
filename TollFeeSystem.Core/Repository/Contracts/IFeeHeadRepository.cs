@@ -4,6 +4,6 @@ namespace TollFeeSystem.Core.Repository.Contracts
 {
     public interface IFeeHeadRepository : IRepository<FeeHead>
     {
-        public void Update(FeeHead feeHead);
+        public void UpdateAsync(FeeHead feeHead);
     }
 }
